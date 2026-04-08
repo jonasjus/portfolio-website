@@ -3,18 +3,18 @@ import { Inter, JetBrains_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ["latin"],
   variable: '--font-inter'
 });
 
-const jetbrainsMono = JetBrains_Mono({ 
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: '--font-jetbrains-mono'
 });
 
 export const metadata: Metadata = {
-  title: 'Alex Chen | Data Scientist',
+  title: 'Jonas Justesen | Data Scientist',
   description: 'Aspiring Data Scientist specializing in machine learning, data visualization, and predictive analytics. Explore my projects and research.',
   generator: 'v0.app',
   icons: {

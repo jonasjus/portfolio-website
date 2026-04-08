@@ -9,7 +9,7 @@ export function Hero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <ParticleField />
-      
+
       <div className="relative z-10 max-w-5xl mx-auto px-6 py-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -19,15 +19,15 @@ export function Hero() {
         >
           {/* Left Column - Name and Navigation */}
           <div className="lg:w-1/3 mb-12 lg:mb-0">
-            <motion.h1 
+            <motion.h1
               className="text-4xl md:text-5xl font-bold tracking-tight mb-3"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             >
-              Alex Chen
+              Jonas Justesen
             </motion.h1>
-            <motion.p 
+            <motion.p
               className="text-primary font-medium text-lg mb-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -35,7 +35,7 @@ export function Hero() {
             >
               Data Scientist
             </motion.p>
-            <motion.p 
+            <motion.p
               className="text-muted-foreground text-sm leading-relaxed mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -45,9 +45,9 @@ export function Hero() {
               actionable insights through machine<br />
               learning and statistical analysis.
             </motion.p>
-            
+
             {/* Navigation */}
-            <motion.nav 
+            <motion.nav
               className="space-y-3 mb-10"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -71,34 +71,34 @@ export function Hero() {
                 </motion.a>
               ))}
             </motion.nav>
-            
+
             {/* Social Links */}
-            <motion.div 
+            <motion.div
               className="flex items-center gap-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.8 }}
             >
-              <a 
-                href="https://github.com" 
-                target="_blank" 
+              <a
+                href="https://github.com/jonasjus"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors duration-300"
                 aria-label="GitHub Profile"
               >
                 <Github className="w-5 h-5" />
               </a>
-              <a 
-                href="https://linkedin.com" 
-                target="_blank" 
+              <a
+                href="https://www.linkedin.com/in/jonas-justesen-b08041348/"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground transition-colors duration-300"
                 aria-label="LinkedIn Profile"
               >
                 <Linkedin className="w-5 h-5" />
               </a>
-              <a 
-                href="mailto:alex@example.com"
+              <a
+                href="mailto:justesen.jonasf@gmail.com"
                 className="text-muted-foreground hover:text-foreground transition-colors duration-300"
                 aria-label="Email"
               >
@@ -106,9 +106,9 @@ export function Hero() {
               </a>
             </motion.div>
           </div>
-          
+
           {/* Right Column - Bio Content */}
-          <motion.div 
+          <motion.div
             className="lg:w-2/3"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -123,7 +123,7 @@ export function Hero() {
               <span className="text-foreground font-medium">domain expertise</span>
               {", creating solutions that are both technically rigorous and practically impactful."}
             </p>
-            
+
             <p className="text-muted-foreground leading-relaxed mb-6">
               {"Currently, I'm focused on developing ML pipelines for "}
               <span className="text-foreground font-medium">time series forecasting</span>
@@ -131,21 +131,21 @@ export function Hero() {
               <span className="text-foreground font-medium">natural language processing</span>
               {". I've worked on projects ranging from customer churn prediction to sentiment analysis of financial news."}
             </p>
-            
+
             <p className="text-muted-foreground leading-relaxed mb-8">
               {"When I'm not diving into data, I contribute to open-source projects, write about emerging ML techniques, and explore new frameworks in the rapidly evolving AI landscape."}
             </p>
-            
+
             <div className="flex flex-wrap gap-3">
-              <Button 
-                variant="default" 
+              <Button
+                variant="default"
                 className="bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300"
                 asChild
               >
                 <a href="#projects">View Projects</a>
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="border-border hover:border-primary hover:text-primary transition-all duration-300"
                 asChild
               >
@@ -154,9 +154,9 @@ export function Hero() {
             </div>
           </motion.div>
         </motion.div>
-        
+
         {/* Scroll Indicator */}
-        <motion.div 
+        <motion.div
           className="absolute bottom-8 left-1/2 -translate-x-1/2"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
