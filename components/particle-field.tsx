@@ -12,6 +12,7 @@ interface Neuron {
 interface Synapse {
   from: number
   to: number
+  brightness: number
 }
 
 interface Pulse {
@@ -88,6 +89,7 @@ export function ParticleField() {
             synapsesRef.current.push({
               from: startIndex + i,
               to: nextStartIndex + j,
+              brightness: 0,
             })
           })
         }
@@ -123,34 +125,39 @@ export function ParticleField() {
       const neurons = neuronsRef.current
       const synapses = synapsesRef.current
 
-      // Draw all synapses as faint lines
+      // Decay synapse brightness and draw all synapses
       synapses.forEach((synapse) => {
+        synapse.brightness *= 0.96
+        
         const from = neurons[synapse.from]
         const to = neurons[synapse.to]
+        
+        // Base opacity is always visible, plus brightness boost when firing
+        const opacity = 0.06 + synapse.brightness * 0.4
 
         ctx.beginPath()
         ctx.moveTo(from.x, from.y)
         ctx.lineTo(to.x, to.y)
-        ctx.strokeStyle = "rgba(91, 200, 186, 0.08)"
-        ctx.lineWidth = 0.5
+        ctx.strokeStyle = `rgba(91, 200, 186, ${opacity})`
+        ctx.lineWidth = 0.5 + synapse.brightness * 1
         ctx.stroke()
       })
 
       // Draw and update pulses
       pulsesRef.current = pulsesRef.current.filter((pulse) => {
         pulse.progress += pulse.speed
+        
+        const synapse = synapses[pulse.synapse]
+        if (!synapse) return false
+        
+        // Keep the synapse bright while pulse is traveling
+        synapse.brightness = 1
 
         if (pulse.progress >= 1) {
           // Activate target neuron when pulse arrives
-          const synapse = synapses[pulse.synapse]
-          if (synapse) {
-            neurons[synapse.to].activation = 1
-          }
+          neurons[synapse.to].activation = 1
           return false
         }
-
-        const synapse = synapses[pulse.synapse]
-        if (!synapse) return false
 
         const from = neurons[synapse.from]
         const to = neurons[synapse.to]
@@ -158,22 +165,14 @@ export function ParticleField() {
         const x = from.x + (to.x - from.x) * pulse.progress
         const y = from.y + (to.y - from.y) * pulse.progress
 
-        // Bright line from source to current pulse position
-        ctx.beginPath()
-        ctx.moveTo(from.x, from.y)
-        ctx.lineTo(x, y)
-        ctx.strokeStyle = "rgba(91, 200, 186, 0.5)"
-        ctx.lineWidth = 1.5
-        ctx.stroke()
-
         // Glowing pulse head
-        const pulseGradient = ctx.createRadialGradient(x, y, 0, x, y, 8)
+        const pulseGradient = ctx.createRadialGradient(x, y, 0, x, y, 6)
         pulseGradient.addColorStop(0, "rgba(91, 200, 186, 1)")
-        pulseGradient.addColorStop(0.4, "rgba(91, 200, 186, 0.4)")
+        pulseGradient.addColorStop(0.5, "rgba(91, 200, 186, 0.5)")
         pulseGradient.addColorStop(1, "rgba(91, 200, 186, 0)")
 
         ctx.beginPath()
-        ctx.arc(x, y, 8, 0, Math.PI * 2)
+        ctx.arc(x, y, 6, 0, Math.PI * 2)
         ctx.fillStyle = pulseGradient
         ctx.fill()
 
