@@ -229,14 +229,14 @@ export function ParticleField() {
             0,
             neuron.x,
             neuron.y,
-            baseSize + glowIntensity * 20
+            baseSize + glowIntensity * 15
           )
-          glowGradient.addColorStop(0, `rgba(91, 200, 186, ${glowIntensity * 0.6})`)
-          glowGradient.addColorStop(0.5, `rgba(91, 200, 186, ${glowIntensity * 0.2})`)
+          glowGradient.addColorStop(0, `rgba(91, 200, 186, ${glowIntensity * 0.3})`)
+          glowGradient.addColorStop(0.5, `rgba(91, 200, 186, ${glowIntensity * 0.1})`)
           glowGradient.addColorStop(1, "rgba(91, 200, 186, 0)")
 
           ctx.beginPath()
-          ctx.arc(neuron.x, neuron.y, baseSize + glowIntensity * 20, 0, Math.PI * 2)
+          ctx.arc(neuron.x, neuron.y, baseSize + glowIntensity * 15, 0, Math.PI * 2)
           ctx.fillStyle = glowGradient
           ctx.fill()
         }
@@ -244,7 +244,7 @@ export function ParticleField() {
         // Core neuron (always visible, brighter when activated)
         ctx.beginPath()
         ctx.arc(neuron.x, neuron.y, baseSize, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(91, 200, 186, ${0.4 + glowIntensity * 0.6})`
+        ctx.fillStyle = `rgba(91, 200, 186, ${0.15 + glowIntensity * 0.35})`
         ctx.fill()
       })
 
