@@ -16,21 +16,30 @@ interface ProjectData {
   technologies: string[]
 }
 
+interface RepoConfig {
+  /** GitHub repository URL */
+  url: string
+  /** Optional custom description (overrides GitHub description) */
+  description?: string
+  /** Optional custom languages/technologies (overrides GitHub languages) */
+  languages?: string[]
+}
+
 interface ProjectsProps {
-  /** Array of GitHub repository URLs to fetch and display */
-  repoUrls: string[]
+  /** Array of GitHub repository configs to fetch and display */
+  repos: RepoConfig[]
   /** GitHub username for the "View All" link */
   githubUsername?: string
 }
 
-export function Projects({ repoUrls, githubUsername }: ProjectsProps) {
+export function Projects({ repos, githubUsername }: ProjectsProps) {
   const [projects, setProjects] = useState<ProjectData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchProjects() {
-      if (repoUrls.length === 0) {
+      if (repos.length === 0) {
         setLoading(false)
         return
       }
@@ -39,10 +48,11 @@ export function Projects({ repoUrls, githubUsername }: ProjectsProps) {
         setLoading(true)
         setError(null)
 
+        const urls = repos.map((r) => r.url)
         const response = await fetch("/api/github", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ urls: repoUrls }),
+          body: JSON.stringify({ urls }),
         })
 
         if (!response.ok) {
@@ -50,7 +60,21 @@ export function Projects({ repoUrls, githubUsername }: ProjectsProps) {
         }
 
         const data = await response.json()
-        setProjects(data.projects)
+        
+        // Apply manual overrides for description and languages
+        const projectsWithOverrides = data.projects.map((project: ProjectData) => {
+          const repoConfig = repos.find((r) => project.github.includes(r.url.replace("https://github.com/", "")))
+          if (repoConfig) {
+            return {
+              ...project,
+              description: repoConfig.description ?? project.description,
+              technologies: repoConfig.languages ?? project.technologies,
+            }
+          }
+          return project
+        })
+        
+        setProjects(projectsWithOverrides)
       } catch (err) {
         console.error("Error fetching projects:", err)
         setError("Failed to load projects. Please try again later.")
@@ -60,7 +84,7 @@ export function Projects({ repoUrls, githubUsername }: ProjectsProps) {
     }
 
     fetchProjects()
-  }, [repoUrls])
+  }, [repos])
 
   return (
     <section id="projects" className="py-24 px-6">
