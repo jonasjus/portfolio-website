@@ -2,19 +2,30 @@
 
 import { useEffect, useRef } from "react"
 
-interface Particle {
+interface Neuron {
   x: number
   y: number
-  vx: number
-  vy: number
-  size: number
-  opacity: number
+  layer: number
+  activation: number
+}
+
+interface Synapse {
+  from: number
+  to: number
+  brightness: number
+}
+
+interface Pulse {
+  synapse: number
+  progress: number
+  speed: number
 }
 
 export function ParticleField() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const particlesRef = useRef<Particle[]>([])
-  const mouseRef = useRef({ x: 0, y: 0 })
+  const neuronsRef = useRef<Neuron[]>([])
+  const synapsesRef = useRef<Synapse[]>([])
+  const pulsesRef = useRef<Pulse[]>([])
   const animationRef = useRef<number>(0)
 
   useEffect(() => {
@@ -29,83 +40,231 @@ export function ParticleField() {
       canvas.height = window.innerHeight
     }
 
-    const initParticles = () => {
-      const particleCount = Math.floor((canvas.width * canvas.height) / 15000)
-      particlesRef.current = Array.from({ length: particleCount }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        size: Math.random() * 1.5 + 0.5,
-        opacity: Math.random() * 0.5 + 0.2,
-      }))
-    }
+    const initNetwork = () => {
+      neuronsRef.current = []
+      synapsesRef.current = []
 
-    const drawParticles = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      // Neural network layer configuration - creates a large network spanning the screen
+      const layers = [6, 10, 14, 18, 14, 10, 6]
+      const layerSpacing = canvas.width / (layers.length + 1)
+      const padding = 80
 
-      particlesRef.current.forEach((particle, i) => {
-        // Update position
-        particle.x += particle.vx
-        particle.y += particle.vy
+      // Create neurons in organized layers
+      let neuronIndex = 0
+      layers.forEach((neuronCount, layerIndex) => {
+        const x = layerSpacing * (layerIndex + 1)
+        const availableHeight = canvas.height - padding * 2
+        const spacing = availableHeight / (neuronCount + 1)
 
-        // Boundary check
-        if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1
-        if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1
-
-        // Mouse interaction
-        const dx = mouseRef.current.x - particle.x
-        const dy = mouseRef.current.y - particle.y
-        const dist = Math.sqrt(dx * dx + dy * dy)
-        if (dist < 150) {
-          const force = (150 - dist) / 150
-          particle.vx -= (dx / dist) * force * 0.02
-          particle.vy -= (dy / dist) * force * 0.02
+        for (let i = 0; i < neuronCount; i++) {
+          const y = padding + spacing * (i + 1)
+          
+          neuronsRef.current.push({
+            x,
+            y,
+            layer: layerIndex,
+            activation: 0,
+          })
+          neuronIndex++
         }
-
-        // Draw particle
-        ctx.beginPath()
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(91, 200, 186, ${particle.opacity})`
-        ctx.fill()
-
-        // Draw connections
-        particlesRef.current.slice(i + 1).forEach((other) => {
-          const dx = particle.x - other.x
-          const dy = particle.y - other.y
-          const dist = Math.sqrt(dx * dx + dy * dy)
-          if (dist < 100) {
-            ctx.beginPath()
-            ctx.moveTo(particle.x, particle.y)
-            ctx.lineTo(other.x, other.y)
-            ctx.strokeStyle = `rgba(91, 200, 186, ${0.1 * (1 - dist / 100)})`
-            ctx.lineWidth = 0.5
-            ctx.stroke()
-          }
-        })
       })
 
-      animationRef.current = requestAnimationFrame(drawParticles)
+      // Create synapses between adjacent layers
+      let startIndex = 0
+      for (let l = 0; l < layers.length - 1; l++) {
+        const currentLayerSize = layers[l]
+        const nextLayerSize = layers[l + 1]
+        const nextStartIndex = startIndex + currentLayerSize
+
+        for (let i = 0; i < currentLayerSize; i++) {
+          // Connect to a subset of neurons in next layer for cleaner look
+          const connections = Math.min(nextLayerSize, 4 + Math.floor(Math.random() * 3))
+          const connectedIndices = new Set<number>()
+          
+          while (connectedIndices.size < connections) {
+            connectedIndices.add(Math.floor(Math.random() * nextLayerSize))
+          }
+
+          connectedIndices.forEach((j) => {
+            synapsesRef.current.push({
+              from: startIndex + i,
+              to: nextStartIndex + j,
+              brightness: 0,
+            })
+          })
+        }
+
+        startIndex += currentLayerSize
+      }
     }
 
-    const handleMouseMove = (e: MouseEvent) => {
-      mouseRef.current = { x: e.clientX, y: e.clientY }
+    const spawnPulse = () => {
+      if (pulsesRef.current.length > 50) return
+      if (synapsesRef.current.length === 0) return
+
+      // Pick a random synapse to fire
+      const synapseIndex = Math.floor(Math.random() * synapsesRef.current.length)
+      
+      pulsesRef.current.push({
+        synapse: synapseIndex,
+        progress: 0,
+        speed: 0.008 + Math.random() * 0.012,
+      })
+
+      // Activate source neuron
+      const synapse = synapsesRef.current[synapseIndex]
+      neuronsRef.current[synapse.from].activation = 1
+    }
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      // Spawn new pulses periodically
+      if (Math.random() < 0.15) spawnPulse()
+
+      const neurons = neuronsRef.current
+      const synapses = synapsesRef.current
+
+      // Collect active pulse positions per synapse for local illumination
+      const pulsesPerSynapse = new Map<number, number[]>()
+      pulsesRef.current.forEach((pulse) => {
+        if (!pulsesPerSynapse.has(pulse.synapse)) {
+          pulsesPerSynapse.set(pulse.synapse, [])
+        }
+        pulsesPerSynapse.get(pulse.synapse)!.push(pulse.progress)
+      })
+
+      // Draw all synapses with base faint lines
+      synapses.forEach((synapse, synapseIndex) => {
+        const from = neurons[synapse.from]
+        const to = neurons[synapse.to]
+        
+        // Draw the base faint line
+        ctx.beginPath()
+        ctx.moveTo(from.x, from.y)
+        ctx.lineTo(to.x, to.y)
+        ctx.strokeStyle = "rgba(91, 200, 186, 0.06)"
+        ctx.lineWidth = 0.5
+        ctx.stroke()
+        
+        // Draw illuminated segments near pulse positions
+        const pulsePositions = pulsesPerSynapse.get(synapseIndex)
+        if (pulsePositions) {
+          pulsePositions.forEach((progress) => {
+            const pulseX = from.x + (to.x - from.x) * progress
+            const pulseY = from.y + (to.y - from.y) * progress
+            
+            // Calculate line segment to illuminate (20% of line length around pulse)
+            const illuminationRange = 0.15
+            const startProgress = Math.max(0, progress - illuminationRange)
+            const endProgress = Math.min(1, progress + illuminationRange)
+            
+            const startX = from.x + (to.x - from.x) * startProgress
+            const startY = from.y + (to.y - from.y) * startProgress
+            const endX = from.x + (to.x - from.x) * endProgress
+            const endY = from.y + (to.y - from.y) * endProgress
+            
+            // Create gradient along the illuminated segment
+            const gradient = ctx.createLinearGradient(startX, startY, endX, endY)
+            gradient.addColorStop(0, "rgba(91, 200, 186, 0.1)")
+            gradient.addColorStop(0.5, "rgba(91, 200, 186, 0.5)")
+            gradient.addColorStop(1, "rgba(91, 200, 186, 0.1)")
+            
+            ctx.beginPath()
+            ctx.moveTo(startX, startY)
+            ctx.lineTo(endX, endY)
+            ctx.strokeStyle = gradient
+            ctx.lineWidth = 1.5
+            ctx.stroke()
+          })
+        }
+      })
+
+      // Draw and update pulses
+      pulsesRef.current = pulsesRef.current.filter((pulse) => {
+        pulse.progress += pulse.speed
+        
+        const synapse = synapses[pulse.synapse]
+        if (!synapse) return false
+
+        if (pulse.progress >= 1) {
+          // Activate target neuron when pulse arrives
+          neurons[synapse.to].activation = 1
+          return false
+        }
+
+        const from = neurons[synapse.from]
+        const to = neurons[synapse.to]
+
+        const x = from.x + (to.x - from.x) * pulse.progress
+        const y = from.y + (to.y - from.y) * pulse.progress
+
+        // Glowing pulse head
+        const pulseGradient = ctx.createRadialGradient(x, y, 0, x, y, 6)
+        pulseGradient.addColorStop(0, "rgba(91, 200, 186, 1)")
+        pulseGradient.addColorStop(0.5, "rgba(91, 200, 186, 0.5)")
+        pulseGradient.addColorStop(1, "rgba(91, 200, 186, 0)")
+
+        ctx.beginPath()
+        ctx.arc(x, y, 6, 0, Math.PI * 2)
+        ctx.fillStyle = pulseGradient
+        ctx.fill()
+
+        return true
+      })
+
+      // Draw neurons (static positions in layers)
+      neurons.forEach((neuron) => {
+        // Decay activation
+        neuron.activation *= 0.94
+
+        const baseSize = 4
+        const glowIntensity = neuron.activation
+
+        // Outer glow when activated
+        if (glowIntensity > 0.1) {
+          const glowGradient = ctx.createRadialGradient(
+            neuron.x,
+            neuron.y,
+            0,
+            neuron.x,
+            neuron.y,
+            baseSize + glowIntensity * 15
+          )
+          glowGradient.addColorStop(0, `rgba(91, 200, 186, ${glowIntensity * 0.3})`)
+          glowGradient.addColorStop(0.5, `rgba(91, 200, 186, ${glowIntensity * 0.1})`)
+          glowGradient.addColorStop(1, "rgba(91, 200, 186, 0)")
+
+          ctx.beginPath()
+          ctx.arc(neuron.x, neuron.y, baseSize + glowIntensity * 15, 0, Math.PI * 2)
+          ctx.fillStyle = glowGradient
+          ctx.fill()
+        }
+
+        // Core neuron (always visible, brighter when activated)
+        ctx.beginPath()
+        ctx.arc(neuron.x, neuron.y, baseSize, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(91, 200, 186, ${0.15 + glowIntensity * 0.35})`
+        ctx.fill()
+      })
+
+      animationRef.current = requestAnimationFrame(draw)
     }
 
     resizeCanvas()
-    initParticles()
-    drawParticles()
+    initNetwork()
+    draw()
 
-    window.addEventListener("resize", () => {
+    const handleResize = () => {
       resizeCanvas()
-      initParticles()
-    })
-    window.addEventListener("mousemove", handleMouseMove)
+      initNetwork()
+    }
+
+    window.addEventListener("resize", handleResize)
 
     return () => {
       cancelAnimationFrame(animationRef.current)
-      window.removeEventListener("resize", resizeCanvas)
-      window.removeEventListener("mousemove", handleMouseMove)
+      window.removeEventListener("resize", handleResize)
     }
   }, [])
 

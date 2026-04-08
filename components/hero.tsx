@@ -55,6 +55,7 @@ export function Hero() {
             >
               {[
                 { label: "ABOUT", href: "#about" },
+                { label: "STUDIES", href: "/studies" },
                 { label: "EXPERIENCE", href: "#experience" },
                 { label: "PROJECTS", href: "#projects" },
               ].map((item, i) => (

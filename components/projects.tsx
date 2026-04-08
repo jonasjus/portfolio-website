@@ -1,57 +1,91 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { ExternalLink, Github, Star, GitFork } from "lucide-react"
+import { ExternalLink, Github, Star, GitFork, Loader2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 
-const projects = [
-  {
-    title: "StockSense AI",
-    description:
-      "A machine learning system that predicts stock market trends using LSTM neural networks and sentiment analysis from financial news. Achieved 78% accuracy on backtesting data.",
-    image: "/projects/stocksense.jpg",
-    technologies: ["Python", "TensorFlow", "NLTK", "FastAPI"],
-    github: "https://github.com",
-    demo: "https://example.com",
-    stars: 234,
-    forks: 45,
-  },
-  {
-    title: "DataViz Dashboard",
-    description:
-      "An interactive dashboard for exploring and visualizing large datasets with real-time filtering, statistical summaries, and exportable reports.",
-    image: "/projects/dataviz.jpg",
-    technologies: ["React", "D3.js", "Python", "PostgreSQL"],
-    github: "https://github.com",
-    demo: "https://example.com",
-    stars: 156,
-    forks: 32,
-  },
-  {
-    title: "ChurnPredict",
-    description:
-      "End-to-end ML pipeline for customer churn prediction with feature engineering, model training, and deployment. Reduced churn by 23% for pilot customers.",
-    image: "/projects/churnpredict.jpg",
-    technologies: ["Scikit-learn", "XGBoost", "Docker", "AWS"],
-    github: "https://github.com",
-    stars: 89,
-    forks: 18,
-  },
-  {
-    title: "NLP Toolkit",
-    description:
-      "A collection of NLP utilities for text preprocessing, named entity recognition, and text classification using modern transformer architectures.",
-    image: "/projects/nlp-toolkit.jpg",
-    technologies: ["Hugging Face", "PyTorch", "spaCy", "Flask"],
-    github: "https://github.com",
-    demo: "https://example.com",
-    stars: 312,
-    forks: 67,
-  },
-]
+interface ProjectData {
+  title: string
+  description: string
+  github: string
+  demo: string | null
+  stars: number
+  forks: number
+  technologies: string[]
+}
 
-export function Projects() {
+interface RepoConfig {
+  /** GitHub repository URL */
+  url: string
+  /** Optional custom description (overrides GitHub description) */
+  description?: string
+  /** Optional custom languages/technologies (overrides GitHub languages) */
+  languages?: string[]
+}
+
+interface ProjectsProps {
+  /** Array of GitHub repository configs to fetch and display */
+  repos: RepoConfig[]
+  /** GitHub username for the "View All" link */
+  githubUsername?: string
+}
+
+export function Projects({ repos, githubUsername }: ProjectsProps) {
+  const [projects, setProjects] = useState<ProjectData[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchProjects() {
+      if (repos.length === 0) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        setLoading(true)
+        setError(null)
+
+        const urls = repos.map((r) => r.url)
+        const response = await fetch("/api/github", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ urls }),
+        })
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch projects")
+        }
+
+        const data = await response.json()
+        
+        // Apply manual overrides for description and languages
+        const projectsWithOverrides = data.projects.map((project: ProjectData) => {
+          const repoConfig = repos.find((r) => project.github.includes(r.url.replace("https://github.com/", "")))
+          if (repoConfig) {
+            return {
+              ...project,
+              description: repoConfig.description ?? project.description,
+              technologies: repoConfig.languages ?? project.technologies,
+            }
+          }
+          return project
+        })
+        
+        setProjects(projectsWithOverrides)
+      } catch (err) {
+        console.error("Error fetching projects:", err)
+        setError("Failed to load projects. Please try again later.")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProjects()
+  }, [repos])
+
   return (
     <section id="projects" className="py-24 px-6">
       <div className="max-w-5xl mx-auto">
@@ -68,26 +102,46 @@ export function Projects() {
               Projects
             </h2>
           </div>
-          
+
           {/* Project Cards */}
           <div className="lg:w-2/3 space-y-8">
-            {projects.map((project, index) => (
-              <motion.div
-                key={project.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-              >
-                <Card className="group bg-transparent border-border/50 hover:border-primary/30 hover:bg-card/30 transition-all duration-300 overflow-hidden">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col gap-4">
-                      <div className="flex items-start justify-between">
-                        <h3 className="text-foreground font-medium text-lg group-hover:text-primary transition-colors duration-300">
-                          {project.title}
-                        </h3>
-                        <div className="flex items-center gap-3">
-                          {project.github && (
+            {loading && (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                <span className="ml-3 text-muted-foreground">Loading projects...</span>
+              </div>
+            )}
+
+            {error && (
+              <div className="text-center py-12">
+                <p className="text-destructive">{error}</p>
+              </div>
+            )}
+
+            {!loading && !error && projects.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">No projects to display.</p>
+              </div>
+            )}
+
+            {!loading &&
+              !error &&
+              projects.map((project, index) => (
+                <motion.div
+                  key={project.github}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                >
+                  <Card className="group bg-transparent border-border/50 hover:border-primary/30 hover:bg-card/30 transition-all duration-300 overflow-hidden">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col gap-4">
+                        <div className="flex items-start justify-between">
+                          <h3 className="text-foreground font-medium text-lg group-hover:text-primary transition-colors duration-300">
+                            {project.title}
+                          </h3>
+                          <div className="flex items-center gap-3">
                             <a
                               href={project.github}
                               target="_blank"
@@ -97,69 +151,70 @@ export function Projects() {
                             >
                               <Github className="w-4 h-4" />
                             </a>
-                          )}
-                          {project.demo && (
-                            <a
-                              href={project.demo}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-muted-foreground hover:text-foreground transition-colors duration-300"
-                              aria-label={`${project.title} Live Demo`}
-                            >
-                              <ExternalLink className="w-4 h-4" />
-                            </a>
-                          )}
+                            {project.demo && (
+                              <a
+                                href={project.demo}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-muted-foreground hover:text-foreground transition-colors duration-300"
+                                aria-label={`${project.title} Live Demo`}
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+
+                        <p className="text-muted-foreground text-sm leading-relaxed">
+                          {project.description}
+                        </p>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex flex-wrap gap-2">
+                            {project.technologies.map((tech) => (
+                              <Badge
+                                key={tech}
+                                variant="secondary"
+                                className="bg-primary/10 text-primary border-0 text-xs font-medium"
+                              >
+                                {tech}
+                              </Badge>
+                            ))}
+                          </div>
+
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Star className="w-3 h-3" />
+                              {project.stars.toLocaleString()}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <GitFork className="w-3 h-3" />
+                              {project.forks.toLocaleString()}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      
-                      <p className="text-muted-foreground text-sm leading-relaxed">
-                        {project.description}
-                      </p>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="flex flex-wrap gap-2">
-                          {project.technologies.map((tech) => (
-                            <Badge
-                              key={tech}
-                              variant="secondary"
-                              className="bg-primary/10 text-primary border-0 text-xs font-medium"
-                            >
-                              {tech}
-                            </Badge>
-                          ))}
-                        </div>
-                        
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Star className="w-3 h-3" />
-                            {project.stars}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <GitFork className="w-3 h-3" />
-                            {project.forks}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-            
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+
             {/* View All Link */}
-            <motion.a
-              href="https://github.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors duration-300 group"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              View Full Project Archive
-              <ExternalLink className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
-            </motion.a>
+            {githubUsername && (
+              <motion.a
+                href={`https://github.com/${githubUsername}?tab=repositories`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors duration-300 group"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+              >
+                View Full Project Archive
+                <ExternalLink className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
+              </motion.a>
+            )}
           </div>
         </motion.div>
       </div>
