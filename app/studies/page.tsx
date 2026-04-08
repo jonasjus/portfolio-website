@@ -1,5 +1,4 @@
 import { StudiesTimeline } from "@/components/studies-timeline"
-import { ParticleField } from "@/components/particle-field"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
@@ -65,8 +64,6 @@ const SEMESTERS = [
 export default function StudiesPage() {
   return (
     <main className="relative min-h-screen bg-background">
-      <ParticleField />
-      
       <div className="relative z-10">
         {/* Back navigation */}
         <div className="fixed top-6 left-6 z-20">
