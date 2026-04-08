@@ -8,9 +8,9 @@ const SEMESTERS = [
     number: 1,
     period: "Fall 2023",
     courses: [
-      { name: "Introduction to Programming", description: "Python fundamentals and algorithmic thinking" },
-      { name: "Calculus I", description: "Limits, derivatives, and integrals" },
-      { name: "Linear Algebra", description: "Vectors, matrices, and linear transformations" },
+      { name: "INF100", description: "Introduction to Programming" },
+      { name: "MAT111", description: "Calculus I" },
+      { name: "INF140", description: "Introduction to Cybersecurity" },
     ],
   },
   {
