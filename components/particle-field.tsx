@@ -5,8 +5,8 @@ import { useEffect, useRef } from "react"
 interface Neuron {
   x: number
   y: number
+  layer: number
   activation: number
-  pulsePhase: number
 }
 
 interface Synapse {
@@ -26,7 +26,6 @@ export function ParticleField() {
   const synapsesRef = useRef<Synapse[]>([])
   const pulsesRef = useRef<Pulse[]>([])
   const animationRef = useRef<number>(0)
-  const timeRef = useRef(0)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -44,45 +43,70 @@ export function ParticleField() {
       neuronsRef.current = []
       synapsesRef.current = []
 
-      // Create randomly distributed static neurons
-      const neuronCount = Math.floor((canvas.width * canvas.height) / 25000)
-      
-      for (let i = 0; i < neuronCount; i++) {
-        neuronsRef.current.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          activation: 0,
-          pulsePhase: Math.random() * Math.PI * 2,
-        })
-      }
+      // Neural network layer configuration - creates a large network spanning the screen
+      const layers = [6, 10, 14, 18, 14, 10, 6]
+      const layerSpacing = canvas.width / (layers.length + 1)
+      const padding = 80
 
-      // Create synapses between nearby neurons
-      const maxDistance = 250
-      const neurons = neuronsRef.current
+      // Create neurons in organized layers
+      let neuronIndex = 0
+      layers.forEach((neuronCount, layerIndex) => {
+        const x = layerSpacing * (layerIndex + 1)
+        const availableHeight = canvas.height - padding * 2
+        const spacing = availableHeight / (neuronCount + 1)
 
-      for (let i = 0; i < neurons.length; i++) {
-        for (let j = i + 1; j < neurons.length; j++) {
-          const dx = neurons[i].x - neurons[j].x
-          const dy = neurons[i].y - neurons[j].y
-          const dist = Math.sqrt(dx * dx + dy * dy)
-
-          if (dist < maxDistance && Math.random() < 0.3) {
-            synapsesRef.current.push({ from: i, to: j })
-          }
+        for (let i = 0; i < neuronCount; i++) {
+          const y = padding + spacing * (i + 1)
+          
+          neuronsRef.current.push({
+            x,
+            y,
+            layer: layerIndex,
+            activation: 0,
+          })
+          neuronIndex++
         }
+      })
+
+      // Create synapses between adjacent layers
+      let startIndex = 0
+      for (let l = 0; l < layers.length - 1; l++) {
+        const currentLayerSize = layers[l]
+        const nextLayerSize = layers[l + 1]
+        const nextStartIndex = startIndex + currentLayerSize
+
+        for (let i = 0; i < currentLayerSize; i++) {
+          // Connect to a subset of neurons in next layer for cleaner look
+          const connections = Math.min(nextLayerSize, 4 + Math.floor(Math.random() * 3))
+          const connectedIndices = new Set<number>()
+          
+          while (connectedIndices.size < connections) {
+            connectedIndices.add(Math.floor(Math.random() * nextLayerSize))
+          }
+
+          connectedIndices.forEach((j) => {
+            synapsesRef.current.push({
+              from: startIndex + i,
+              to: nextStartIndex + j,
+            })
+          })
+        }
+
+        startIndex += currentLayerSize
       }
     }
 
     const spawnPulse = () => {
-      if (pulsesRef.current.length > 30) return
+      if (pulsesRef.current.length > 50) return
       if (synapsesRef.current.length === 0) return
 
+      // Pick a random synapse to fire
       const synapseIndex = Math.floor(Math.random() * synapsesRef.current.length)
       
       pulsesRef.current.push({
         synapse: synapseIndex,
         progress: 0,
-        speed: 0.01 + Math.random() * 0.015,
+        speed: 0.008 + Math.random() * 0.012,
       })
 
       // Activate source neuron
@@ -91,11 +115,10 @@ export function ParticleField() {
     }
 
     const draw = () => {
-      timeRef.current += 0.016
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
       // Spawn new pulses periodically
-      if (Math.random() < 0.08) spawnPulse()
+      if (Math.random() < 0.15) spawnPulse()
 
       const neurons = neuronsRef.current
       const synapses = synapsesRef.current
@@ -108,7 +131,7 @@ export function ParticleField() {
         ctx.beginPath()
         ctx.moveTo(from.x, from.y)
         ctx.lineTo(to.x, to.y)
-        ctx.strokeStyle = "rgba(91, 200, 186, 0.06)"
+        ctx.strokeStyle = "rgba(91, 200, 186, 0.08)"
         ctx.lineWidth = 0.5
         ctx.stroke()
       })
@@ -135,34 +158,34 @@ export function ParticleField() {
         const x = from.x + (to.x - from.x) * pulse.progress
         const y = from.y + (to.y - from.y) * pulse.progress
 
-        // Bright line from source to pulse position
+        // Bright line from source to current pulse position
         ctx.beginPath()
         ctx.moveTo(from.x, from.y)
         ctx.lineTo(x, y)
-        ctx.strokeStyle = "rgba(91, 200, 186, 0.4)"
-        ctx.lineWidth = 1
+        ctx.strokeStyle = "rgba(91, 200, 186, 0.5)"
+        ctx.lineWidth = 1.5
         ctx.stroke()
 
         // Glowing pulse head
-        const pulseGradient = ctx.createRadialGradient(x, y, 0, x, y, 6)
-        pulseGradient.addColorStop(0, "rgba(91, 200, 186, 0.9)")
-        pulseGradient.addColorStop(0.5, "rgba(91, 200, 186, 0.3)")
+        const pulseGradient = ctx.createRadialGradient(x, y, 0, x, y, 8)
+        pulseGradient.addColorStop(0, "rgba(91, 200, 186, 1)")
+        pulseGradient.addColorStop(0.4, "rgba(91, 200, 186, 0.4)")
         pulseGradient.addColorStop(1, "rgba(91, 200, 186, 0)")
 
         ctx.beginPath()
-        ctx.arc(x, y, 6, 0, Math.PI * 2)
+        ctx.arc(x, y, 8, 0, Math.PI * 2)
         ctx.fillStyle = pulseGradient
         ctx.fill()
 
         return true
       })
 
-      // Draw neurons (static positions)
+      // Draw neurons (static positions in layers)
       neurons.forEach((neuron) => {
         // Decay activation
-        neuron.activation *= 0.92
+        neuron.activation *= 0.94
 
-        const baseSize = 3
+        const baseSize = 4
         const glowIntensity = neuron.activation
 
         // Outer glow when activated
@@ -173,14 +196,14 @@ export function ParticleField() {
             0,
             neuron.x,
             neuron.y,
-            baseSize + glowIntensity * 15
+            baseSize + glowIntensity * 20
           )
-          glowGradient.addColorStop(0, `rgba(91, 200, 186, ${glowIntensity * 0.5})`)
+          glowGradient.addColorStop(0, `rgba(91, 200, 186, ${glowIntensity * 0.6})`)
           glowGradient.addColorStop(0.5, `rgba(91, 200, 186, ${glowIntensity * 0.2})`)
           glowGradient.addColorStop(1, "rgba(91, 200, 186, 0)")
 
           ctx.beginPath()
-          ctx.arc(neuron.x, neuron.y, baseSize + glowIntensity * 15, 0, Math.PI * 2)
+          ctx.arc(neuron.x, neuron.y, baseSize + glowIntensity * 20, 0, Math.PI * 2)
           ctx.fillStyle = glowGradient
           ctx.fill()
         }
@@ -188,7 +211,7 @@ export function ParticleField() {
         // Core neuron (always visible, brighter when activated)
         ctx.beginPath()
         ctx.arc(neuron.x, neuron.y, baseSize, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(91, 200, 186, ${0.3 + glowIntensity * 0.7})`
+        ctx.fillStyle = `rgba(91, 200, 186, ${0.4 + glowIntensity * 0.6})`
         ctx.fill()
       })
 
@@ -199,14 +222,16 @@ export function ParticleField() {
     initNetwork()
     draw()
 
-    window.addEventListener("resize", () => {
+    const handleResize = () => {
       resizeCanvas()
       initNetwork()
-    })
+    }
+
+    window.addEventListener("resize", handleResize)
 
     return () => {
       cancelAnimationFrame(animationRef.current)
-      window.removeEventListener("resize", resizeCanvas)
+      window.removeEventListener("resize", handleResize)
     }
   }, [])
 
