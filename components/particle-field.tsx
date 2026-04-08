@@ -125,22 +125,59 @@ export function ParticleField() {
       const neurons = neuronsRef.current
       const synapses = synapsesRef.current
 
-      // Decay synapse brightness and draw all synapses
-      synapses.forEach((synapse) => {
-        synapse.brightness *= 0.96
-        
+      // Collect active pulse positions per synapse for local illumination
+      const pulsesPerSynapse = new Map<number, number[]>()
+      pulsesRef.current.forEach((pulse) => {
+        if (!pulsesPerSynapse.has(pulse.synapse)) {
+          pulsesPerSynapse.set(pulse.synapse, [])
+        }
+        pulsesPerSynapse.get(pulse.synapse)!.push(pulse.progress)
+      })
+
+      // Draw all synapses with base faint lines
+      synapses.forEach((synapse, synapseIndex) => {
         const from = neurons[synapse.from]
         const to = neurons[synapse.to]
         
-        // Base opacity is always visible, plus brightness boost when firing
-        const opacity = 0.06 + synapse.brightness * 0.4
-
+        // Draw the base faint line
         ctx.beginPath()
         ctx.moveTo(from.x, from.y)
         ctx.lineTo(to.x, to.y)
-        ctx.strokeStyle = `rgba(91, 200, 186, ${opacity})`
-        ctx.lineWidth = 0.5 + synapse.brightness * 1
+        ctx.strokeStyle = "rgba(91, 200, 186, 0.06)"
+        ctx.lineWidth = 0.5
         ctx.stroke()
+        
+        // Draw illuminated segments near pulse positions
+        const pulsePositions = pulsesPerSynapse.get(synapseIndex)
+        if (pulsePositions) {
+          pulsePositions.forEach((progress) => {
+            const pulseX = from.x + (to.x - from.x) * progress
+            const pulseY = from.y + (to.y - from.y) * progress
+            
+            // Calculate line segment to illuminate (20% of line length around pulse)
+            const illuminationRange = 0.15
+            const startProgress = Math.max(0, progress - illuminationRange)
+            const endProgress = Math.min(1, progress + illuminationRange)
+            
+            const startX = from.x + (to.x - from.x) * startProgress
+            const startY = from.y + (to.y - from.y) * startProgress
+            const endX = from.x + (to.x - from.x) * endProgress
+            const endY = from.y + (to.y - from.y) * endProgress
+            
+            // Create gradient along the illuminated segment
+            const gradient = ctx.createLinearGradient(startX, startY, endX, endY)
+            gradient.addColorStop(0, "rgba(91, 200, 186, 0.1)")
+            gradient.addColorStop(0.5, "rgba(91, 200, 186, 0.5)")
+            gradient.addColorStop(1, "rgba(91, 200, 186, 0.1)")
+            
+            ctx.beginPath()
+            ctx.moveTo(startX, startY)
+            ctx.lineTo(endX, endY)
+            ctx.strokeStyle = gradient
+            ctx.lineWidth = 1.5
+            ctx.stroke()
+          })
+        }
       })
 
       // Draw and update pulses
@@ -149,9 +186,6 @@ export function ParticleField() {
         
         const synapse = synapses[pulse.synapse]
         if (!synapse) return false
-        
-        // Keep the synapse bright while pulse is traveling
-        synapse.brightness = 1
 
         if (pulse.progress >= 1) {
           // Activate target neuron when pulse arrives
