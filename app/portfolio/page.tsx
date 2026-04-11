@@ -12,6 +12,12 @@ import { ArrowLeft } from "lucide-react"
 // Each repo can have optional manual overrides for title, inProgress, description and languages
 const GITHUB_REPOS = [
   {
+    url: "https://github.com/jonasjus/webathon",
+    title: "Webathon 2026 - Venue",
+    inProgress: false,
+    description: "",
+  },
+  {
     url: "",
     title: "Decoder-only Model for Text Generation",
     inProgress: true,
