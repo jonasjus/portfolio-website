@@ -6,33 +6,37 @@ const skillCategories = [
   {
     category: "Languages",
     skills: [
-      { name: "Python", level: 95 },
-      { name: "SQL", level: 90 },
-      { name: "Java", level: 90 },  
+      { name: "Python", experience: 4 },
+      { name: "SQL", experience: 4 },
+      { name: "Java", experience: 4 },
     ],
   },
   {
     category: "Machine Learning",
     skills: [
-      { name: "PyTorch", level: 80 },
-      { name: "Scikit-learn", level: 90 },
+      { name: "PyTorch", experience: 3 },
+      { name: "Scikit-learn", experience: 3 },
 
     ],
   },
   {
     category: "Data Tools",
     skills: [
-      { name: "Pandas", level: 95 },
-      { name: "NumPy", level: 92 },
+      { name: "Pandas", experience: 4 },
+      { name: "NumPy", experience: 4 },
     ],
   },
   {
     category: "Other",
     skills: [
-      { name: "Git", level: 90 },
+      { name: "Git", experience: 4 },
+      { name: "Agile Methodologies", experience: 3 },
+      { name: "Agentic Coding", experience: 3 },
     ],
   },
 ]
+
+const MAX_EXPERIENCE_DOTS = 4
 
 export function Skills() {
   return (
@@ -72,20 +76,24 @@ export function Skills() {
                       <div key={skill.name} className="space-y-1.5">
                         <div className="flex justify-between text-xs">
                           <span className="text-muted-foreground">{skill.name}</span>
-                          <span className="text-muted-foreground font-mono">{skill.level}%</span>
-                        </div>
-                        <div className="h-1 bg-secondary rounded-full overflow-hidden">
-                          <motion.div
-                            className="h-full bg-primary rounded-full"
-                            initial={{ width: 0 }}
-                            whileInView={{ width: `${skill.level}%` }}
-                            viewport={{ once: true }}
-                            transition={{
-                              duration: 1,
-                              delay: categoryIndex * 0.1 + skillIndex * 0.05,
-                              ease: [0.22, 1, 0.36, 1],
-                            }}
-                          />
+                          <div className="flex items-center gap-1" aria-label={`${skill.experience} out of ${MAX_EXPERIENCE_DOTS} experience dots`}>
+                            {Array.from({ length: MAX_EXPERIENCE_DOTS }).map((_, dotIndex) => {
+                              const isFilled = dotIndex < skill.experience
+                              return (
+                                <motion.span
+                                  key={`${skill.name}-${dotIndex}`}
+                                  className={`h-2.5 w-2.5 rounded-full ${isFilled ? "bg-primary" : "bg-secondary"}`}
+                                  initial={{ opacity: 0, scale: 0.8 }}
+                                  whileInView={{ opacity: 1, scale: 1 }}
+                                  viewport={{ once: true }}
+                                  transition={{
+                                    duration: 0.25,
+                                    delay: categoryIndex * 0.1 + skillIndex * 0.05 + dotIndex * 0.03,
+                                  }}
+                                />
+                              )
+                            })}
+                          </div>
                         </div>
                       </div>
                     ))}
