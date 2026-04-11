@@ -16,7 +16,7 @@ export function Footer() {
           className="flex flex-col md:flex-row justify-between items-center gap-4"
         >
           <p className="text-xs text-muted-foreground">
-            &copy; {currentYear}. Crafted by Alex Chen
+            &copy; {currentYear}. Crafted by Jonas Justesen
           </p>
           
           <div className="flex items-center gap-6">

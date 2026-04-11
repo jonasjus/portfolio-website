@@ -14,11 +14,16 @@ interface ProjectData {
   stars: number
   forks: number
   technologies: string[]
+  inProgress?: boolean
 }
 
 interface RepoConfig {
-  /** GitHub repository URL */
-  url: string
+  /** Optional GitHub repository URL */
+  url?: string
+  /** Optional custom title (overrides GitHub repository name) */
+  title?: string
+  /** Optional project status tag */
+  inProgress?: boolean
   /** Optional custom description (overrides GitHub description) */
   description?: string
   /** Optional custom languages/technologies (overrides GitHub languages) */
@@ -48,33 +53,59 @@ export function Projects({ repos, githubUsername }: ProjectsProps) {
         setLoading(true)
         setError(null)
 
-        const urls = repos.map((r) => r.url)
-        const response = await fetch("/api/github", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ urls }),
-        })
+        const reposWithUrl = repos.filter((repo) => Boolean(repo.url?.trim()))
+        const manualProjects: ProjectData[] = repos
+          .filter((repo) => !repo.url?.trim())
+          .map((repo) => ({
+            title: repo.title ?? "Untitled Project",
+            description: repo.description ?? "No description available.",
+            github: "",
+            demo: null,
+            stars: 0,
+            forks: 0,
+            technologies: repo.languages ?? [],
+            inProgress: repo.inProgress ?? false,
+          }))
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch projects")
-        }
+        let fetchedProjects: ProjectData[] = []
+        if (reposWithUrl.length > 0) {
+          const urls = reposWithUrl.map((repo) => repo.url as string)
+          const response = await fetch("/api/github", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ urls }),
+          })
 
-        const data = await response.json()
-        
-        // Apply manual overrides for description and languages
-        const projectsWithOverrides = data.projects.map((project: ProjectData) => {
-          const repoConfig = repos.find((r) => project.github.includes(r.url.replace("https://github.com/", "")))
-          if (repoConfig) {
+          if (!response.ok) {
+            throw new Error("Failed to fetch projects")
+          }
+
+          const data = await response.json()
+
+          // Apply manual overrides for title, description and languages
+          fetchedProjects = data.projects.map((project: ProjectData) => {
+            const repoConfig = reposWithUrl.find((repo) =>
+              project.github.includes((repo.url as string).replace("https://github.com/", ""))
+            )
+
+            if (repoConfig) {
+              return {
+                ...project,
+                title: repoConfig.title ?? project.title,
+                description: repoConfig.description ?? project.description,
+                technologies: repoConfig.languages ?? project.technologies,
+                inProgress: repoConfig.inProgress ?? false,
+              }
+            }
+
             return {
               ...project,
-              description: repoConfig.description ?? project.description,
-              technologies: repoConfig.languages ?? project.technologies,
+              inProgress: false,
             }
-          }
-          return project
-        })
-        
-        setProjects(projectsWithOverrides)
+          })
+        }
+
+        setProjects([...manualProjects, ...fetchedProjects])
       } catch (err) {
         console.error("Error fetching projects:", err)
         setError("Failed to load projects. Please try again later.")
@@ -128,7 +159,7 @@ export function Projects({ repos, githubUsername }: ProjectsProps) {
               !error &&
               projects.map((project, index) => (
                 <motion.div
-                  key={project.github}
+                  key={project.github || `${project.title}-${index}`}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-50px" }}
@@ -138,19 +169,28 @@ export function Projects({ repos, githubUsername }: ProjectsProps) {
                     <CardContent className="p-6">
                       <div className="flex flex-col gap-4">
                         <div className="flex items-start justify-between">
-                          <h3 className="text-foreground font-medium text-lg group-hover:text-primary transition-colors duration-300">
-                            {project.title}
-                          </h3>
                           <div className="flex items-center gap-3">
-                            <a
-                              href={project.github}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-muted-foreground hover:text-foreground transition-colors duration-300"
-                              aria-label={`${project.title} GitHub Repository`}
-                            >
-                              <Github className="w-4 h-4" />
-                            </a>
+                            <h3 className="text-foreground font-medium text-lg group-hover:text-primary transition-colors duration-300">
+                              {project.title}
+                            </h3>
+                            {project.inProgress && (
+                              <span className="text-xs font-normal text-primary bg-primary/10 px-2 py-1 rounded">
+                                In Progress
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3">
+                            {project.github && (
+                              <a
+                                href={project.github}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-muted-foreground hover:text-foreground transition-colors duration-300"
+                                aria-label={`${project.title} GitHub Repository`}
+                              >
+                                <Github className="w-4 h-4" />
+                              </a>
+                            )}
                             {project.demo && (
                               <a
                                 href={project.demo}

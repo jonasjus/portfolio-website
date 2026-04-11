@@ -6,31 +6,13 @@ import { Badge } from "@/components/ui/badge"
 
 const experiences = [
   {
-    period: "2024 — PRESENT",
-    title: "Data Science Intern",
-    company: "TechVentures AI",
-    url: "https://example.com",
+    period: "2024 - 2025",
+    title: "Teaching Assistant",
+    company: "University of Bergen",
+    url: "https://www.uib.no/",
     description:
-      "Building machine learning models for predictive analytics and customer segmentation. Developing automated data pipelines and creating interactive dashboards for stakeholder reporting.",
-    skills: ["Python", "TensorFlow", "SQL", "Tableau"],
-  },
-  {
-    period: "2023 — 2024",
-    title: "Research Assistant",
-    company: "University ML Lab",
-    url: "https://example.com",
-    description:
-      "Conducted research on deep learning architectures for natural language processing. Published findings on transformer models for sentiment analysis in academic journals.",
-    skills: ["PyTorch", "NLP", "Research", "LaTeX"],
-  },
-  {
-    period: "2022 — 2023",
-    title: "Data Analyst",
-    company: "DataDriven Co",
-    url: "https://example.com",
-    description:
-      "Performed statistical analysis on large datasets to identify business trends. Created automated reporting solutions and improved data quality processes.",
-    skills: ["R", "Excel", "Power BI", "Statistics"],
+      "Held group sessions and provided support for students in the course Introduction to Programming (INF100) at the University of Bergen. Gained experience in communicating programming concepts and working in a team. Received positive feedback for being approachable and helpful.",
+    skills: ["Python", "Teaching", "Communication"],
   },
 ]
 

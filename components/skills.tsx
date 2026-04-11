@@ -4,21 +4,19 @@ import { motion } from "framer-motion"
 
 const skillCategories = [
   {
-    category: "Languages & Frameworks",
+    category: "Languages",
     skills: [
       { name: "Python", level: 95 },
-      { name: "R", level: 85 },
       { name: "SQL", level: 90 },
-      { name: "JavaScript", level: 75 },
+      { name: "Java", level: 90 },  
     ],
   },
   {
     category: "Machine Learning",
     skills: [
-      { name: "TensorFlow", level: 88 },
-      { name: "PyTorch", level: 82 },
-      { name: "Scikit-learn", level: 92 },
-      { name: "Hugging Face", level: 78 },
+      { name: "PyTorch", level: 80 },
+      { name: "Scikit-learn", level: 90 },
+
     ],
   },
   {
@@ -26,17 +24,12 @@ const skillCategories = [
     skills: [
       { name: "Pandas", level: 95 },
       { name: "NumPy", level: 92 },
-      { name: "Spark", level: 70 },
-      { name: "Tableau", level: 80 },
     ],
   },
   {
-    category: "Cloud & DevOps",
+    category: "Other",
     skills: [
-      { name: "AWS", level: 75 },
-      { name: "Docker", level: 72 },
-      { name: "Git", level: 88 },
-      { name: "MLflow", level: 68 },
+      { name: "Git", level: 90 },
     ],
   },
 ]

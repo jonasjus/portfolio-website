@@ -6,6 +6,7 @@ import { BookOpen, Clock, CheckCircle2 } from "lucide-react"
 interface Course {
   name: string
   description?: string
+  link?: string
 }
 
 interface Semester {
@@ -13,6 +14,7 @@ interface Semester {
   period: string // e.g., "Fall 2023"
   courses: Course[]
   isCurrent?: boolean
+  link?: string
 }
 
 interface StudiesTimelineProps {
@@ -101,29 +103,52 @@ export function StudiesTimeline({
                 {/* Courses */}
                 <div className="space-y-3">
                   {semester.courses.map((course, courseIndex) => (
-                    <motion.div
-                      key={courseIndex}
-                      initial={{ opacity: 0, x: semesterIndex % 2 === 0 ? 20 : -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.4, delay: semesterIndex * 0.1 + courseIndex * 0.05 }}
-                      className={`group p-4 rounded-lg bg-card border border-border hover:border-primary/50 transition-all duration-300 ${
-                        semesterIndex % 2 === 0 ? "md:text-left" : ""
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <BookOpen className="w-4 h-4 text-primary mt-1 shrink-0" />
-                        <div>
-                          <h4 className="font-medium text-foreground group-hover:text-primary transition-colors duration-300">
-                            {course.name}
-                          </h4>
-                          {course.description && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {course.description}
-                            </p>
-                          )}
+                    (() => {
+                      const cardLink = course.link ?? semester.link
+                      const cardContent = (
+                        <div className="flex items-start gap-3">
+                          <BookOpen className="w-4 h-4 text-primary mt-1 shrink-0" />
+                          <div>
+                            <h4 className="font-medium text-foreground group-hover:text-primary transition-colors duration-300">
+                              {course.name}
+                            </h4>
+                            {course.description && (
+                              <p className="text-sm text-muted-foreground mt-1">
+                                {course.description}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </motion.div>
+                      )
+
+                      const cardClassName = `group p-4 rounded-lg bg-card border border-border hover:border-primary/50 transition-all duration-300 ${
+                        semesterIndex % 2 === 0 ? "md:text-left" : ""
+                      } ${cardLink ? "cursor-pointer" : ""}`
+
+                      return (
+                        <motion.div
+                          key={courseIndex}
+                          initial={{ opacity: 0, x: semesterIndex % 2 === 0 ? 20 : -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.4, delay: semesterIndex * 0.1 + courseIndex * 0.05 }}
+                          className={cardClassName}
+                          role={cardLink ? "link" : undefined}
+                          tabIndex={cardLink ? 0 : undefined}
+                          aria-label={cardLink ? `Open link for ${course.name}` : undefined}
+                          onClick={cardLink ? () => window.open(cardLink, "_blank", "noopener,noreferrer") : undefined}
+                          onKeyDown={cardLink
+                            ? (event) => {
+                                if (event.key === "Enter" || event.key === " ") {
+                                  event.preventDefault()
+                                  window.open(cardLink, "_blank", "noopener,noreferrer")
+                                }
+                              }
+                            : undefined}
+                        >
+                          {cardContent}
+                        </motion.div>
+                      )
+                    })()
                   ))}
                 </div>
               </div>

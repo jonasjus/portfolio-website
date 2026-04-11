@@ -46,7 +46,7 @@ export function Contact() {
                 className="bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300"
                 asChild
               >
-                <a href="mailto:alex@example.com">Contact</a>
+                <a href="mailto:justesen.jonasf@gmail.com">Contact</a>
               </Button>
             </motion.div>
             
@@ -60,10 +60,10 @@ export function Contact() {
               <div className="flex items-center justify-between py-3 border-b border-border/50">
                 <span className="text-sm text-muted-foreground">Mail</span>
                 <a
-                  href="mailto:alex@example.com"
+                  href="mailto:justesen.jonasf@gmail.com"
                   className="text-sm text-foreground hover:text-primary transition-colors duration-300 flex items-center gap-2"
                 >
-                  alex@example.com
+                  justesen.jonasf@gmail.com
                   <Mail className="w-4 h-4" />
                 </a>
               </div>
@@ -71,12 +71,12 @@ export function Contact() {
               <div className="flex items-center justify-between py-3 border-b border-border/50">
                 <span className="text-sm text-muted-foreground">LinkedIn</span>
                 <a
-                  href="https://linkedin.com"
+                  href="https://www.linkedin.com/in/jonas-justesen-b08041348/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-foreground hover:text-primary transition-colors duration-300 flex items-center gap-2"
                 >
-                  @alexchen
+                  Jonas Justesen
                   <Linkedin className="w-4 h-4" />
                 </a>
               </div>
@@ -84,26 +84,13 @@ export function Contact() {
               <div className="flex items-center justify-between py-3 border-b border-border/50">
                 <span className="text-sm text-muted-foreground">GitHub</span>
                 <a
-                  href="https://github.com"
+                  href="https://github.com/jonasjus"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-foreground hover:text-primary transition-colors duration-300 flex items-center gap-2"
                 >
-                  @alexchen
+                  @jonasjus
                   <Github className="w-4 h-4" />
-                </a>
-              </div>
-              
-              <div className="flex items-center justify-between py-3 border-b border-border/50">
-                <span className="text-sm text-muted-foreground">X</span>
-                <a
-                  href="https://x.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-foreground hover:text-primary transition-colors duration-300 flex items-center gap-2"
-                >
-                  @alexchen_data
-                  <Twitter className="w-4 h-4" />
                 </a>
               </div>
             </motion.div>
