@@ -7,7 +7,7 @@ const INTRO_TEXT = "Hello"
 const TYPE_SPEED_MS = 120
 const DELETE_SPEED_MS = 80
 const HOLD_BEFORE_DELETE_MS = 2000
-const HELLO_TRANSLATIONS = ["Hola", "Bonjour", "Ciao", "Hallo", "Hej", "Nihau", "Konnichiwa", "Salaam", "Hei"]
+const HELLO_TRANSLATIONS = ["Hola", "Bonjour", "Ciao", "Hallo", "Hej", "안녕하세요", "你好", "こんにちは", "Salaam", "Hei", "مرحبا", "Zdravo"]
 
 export default function Home() {
   const [now, setNow] = useState<Date | null>(null)
