@@ -1,14 +1,22 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
-const INTRO_TEXT = "Hello World"
+const INTRO_TEXT = "Hello"
 const TYPE_SPEED_MS = 120
+const DELETE_SPEED_MS = 80
+const HOLD_BEFORE_DELETE_MS = 2000
+const HELLO_TRANSLATIONS = ["Hola", "Bonjour", "Ciao", "Hallo", "Hej", "Nihau", "Konnichiwa", "Salaam", "Hei"]
 
 export default function Home() {
   const [now, setNow] = useState<Date | null>(null)
   const [typedHello, setTypedHello] = useState("")
+  const typedHelloRef = useRef(typedHello)
+
+  useEffect(() => {
+    typedHelloRef.current = typedHello
+  }, [typedHello])
 
   useEffect(() => {
     setNow(new Date())
@@ -17,18 +25,86 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    let index = 0
+    let isActive = true
+    const intervalIds: number[] = []
+    const timeoutIds: number[] = []
 
-    const typingTimer = window.setInterval(() => {
-      index += 1
-      setTypedHello(INTRO_TEXT.slice(0, index))
+    const typeText = (text: string, speed: number, onDone?: () => void) => {
+      let index = 0
+      const intervalId = window.setInterval(() => {
+        if (!isActive) {
+          window.clearInterval(intervalId)
+          return
+        }
 
-      if (index >= INTRO_TEXT.length) {
-        window.clearInterval(typingTimer)
+        index += 1
+        const nextText = text.slice(0, index)
+        typedHelloRef.current = nextText
+        setTypedHello(nextText)
+
+        if (index >= text.length) {
+          window.clearInterval(intervalId)
+          onDone?.()
+        }
+      }, speed)
+
+      intervalIds.push(intervalId)
+    }
+
+    const deleteText = (speed: number, onDone?: () => void) => {
+      const intervalId = window.setInterval(() => {
+        if (!isActive) {
+          window.clearInterval(intervalId)
+          return
+        }
+
+        const previous = typedHelloRef.current
+        if (previous.length <= 1) {
+          typedHelloRef.current = ""
+          setTypedHello("")
+          window.clearInterval(intervalId)
+          onDone?.()
+          return
+        }
+
+        const nextText = previous.slice(0, -1)
+        typedHelloRef.current = nextText
+        setTypedHello(nextText)
+      }, speed)
+
+      intervalIds.push(intervalId)
+    }
+
+    const runRandomCycle = () => {
+      if (!isActive) {
+        return
       }
-    }, TYPE_SPEED_MS)
 
-    return () => window.clearInterval(typingTimer)
+      const randomGreeting =
+        HELLO_TRANSLATIONS[Math.floor(Math.random() * HELLO_TRANSLATIONS.length)]
+
+      typeText(randomGreeting, TYPE_SPEED_MS, () => {
+        const holdRandomTimeoutId = window.setTimeout(() => {
+          deleteText(DELETE_SPEED_MS, runRandomCycle)
+        }, HOLD_BEFORE_DELETE_MS)
+
+        timeoutIds.push(holdRandomTimeoutId)
+      })
+    }
+
+    typeText(INTRO_TEXT, TYPE_SPEED_MS, () => {
+      const holdHelloTimeoutId = window.setTimeout(() => {
+        deleteText(DELETE_SPEED_MS, runRandomCycle)
+      }, HOLD_BEFORE_DELETE_MS)
+
+      timeoutIds.push(holdHelloTimeoutId)
+    })
+
+    return () => {
+      isActive = false
+      intervalIds.forEach((id) => window.clearInterval(id))
+      timeoutIds.forEach((id) => window.clearTimeout(id))
+    }
   }, [])
 
   const timeLabel = useMemo(
@@ -53,7 +129,7 @@ export default function Home() {
             </div>
             <div className="text-4xl font-medium tracking-wide sm:text-5xl">
               {typedHello}
-              {typedHello.length < INTRO_TEXT.length && <span className="animate-pulse">|</span>}
+              <span className="animate-pulse">|</span>
             </div>
           </div>
         </div>
