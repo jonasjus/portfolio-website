@@ -4,6 +4,8 @@ import { Experience } from "@/components/experience"
 import { Projects } from "@/components/projects"
 import { Contact } from "@/components/contact"
 import { Footer } from "@/components/footer"
+import Link from "next/link"
+import { ArrowLeft } from "lucide-react"
 
 // Configure your projects here
 // url is optional; without it, the project is shown as a manual entry
@@ -42,6 +44,15 @@ const GITHUB_USERNAME = "jonasjus"
 export default function PortfolioPage() {
   return (
     <main className="relative">
+      <div className="fixed top-6 left-6 z-20">
+        <Link
+          href="/"
+          className="group flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-300"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" />
+          Back to Home
+        </Link>
+      </div>
       <Hero />
       <Skills />
       <Experience />

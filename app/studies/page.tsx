@@ -71,11 +71,11 @@ export default function StudiesPage() {
                 {/* Back navigation */}
                 <div className="fixed top-6 left-6 z-20">
                     <Link
-                        href="/"
+                        href="/portfolio"
                         className="group flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-300"
                     >
                         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" />
-                        Back to Home
+                        Back to Portfolio
                     </Link>
                 </div>
 
