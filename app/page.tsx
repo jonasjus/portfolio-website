@@ -1,53 +1,71 @@
-import { Hero } from "@/components/hero"
-import { Skills } from "@/components/skills"
-import { Experience } from "@/components/experience"
-import { Projects } from "@/components/projects"
-import { Contact } from "@/components/contact"
-import { Footer } from "@/components/footer"
+"use client"
 
-// Configure your projects here
-// url is optional; without it, the project is shown as a manual entry
-// Each repo can have optional manual overrides for title, inProgress, description and languages
-const GITHUB_REPOS = [
-  {
-    url: "",
-    title: "Decoder-only Model for Text Generation",
-    inProgress: true,
-    description: "Implementing a decoder-only transformer model to generate coherent text based on a given prompt. The project includes data preprocessing, model architecture design, training, and evaluation using Python and PyTorch.",
-    languages: ["Python", "Pytorch", "Transformers"],
-  },
-  {
-    url: "",
-    title: "Encoder-only Model for Movie Review Sentiment Classification",
-    inProgress: true,
-    description: "Implementing an encoder-only transformer model to classify movie reviews as positive or negative. The project involves data preprocessing, model architecture design, training, and evaluation using Python and PyTorch.",
-    languages: ["Python", "Pytorch", "Transformers"],
-  },
-  {
-    url: "",
-    title: "Object detection with CNN",
-    description: "Implemented a convolutional neural network for digit recognition using Python and TensorFlow.",
-    languages: ["Python", "Pytorch", "CNN"],
-  },
-  {
-    url: "https://github.com/jonasjus/StarJump",
-    description: "Developed a 2D platformer game in Java, I worked on game mechanics such as character movement, enemy AI and level loader. Worked in a team of 6 using Git and Agile methodologies.",
-    languages: ["Java", "Maven", "Agile", "Git teamwork"],
-  }
-]
+import Link from "next/link"
+import { useEffect, useMemo, useState } from "react"
 
-// Your GitHub username for the "View All Projects" link
-const GITHUB_USERNAME = "jonasjus"
+const INTRO_TEXT = "Hello World"
+const TYPE_SPEED_MS = 120
 
 export default function Home() {
+  const [now, setNow] = useState<Date | null>(null)
+  const [typedHello, setTypedHello] = useState("")
+
+  useEffect(() => {
+    setNow(new Date())
+    const timer = window.setInterval(() => setNow(new Date()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    let index = 0
+
+    const typingTimer = window.setInterval(() => {
+      index += 1
+      setTypedHello(INTRO_TEXT.slice(0, index))
+
+      if (index >= INTRO_TEXT.length) {
+        window.clearInterval(typingTimer)
+      }
+    }, TYPE_SPEED_MS)
+
+    return () => window.clearInterval(typingTimer)
+  }, [])
+
+  const timeLabel = useMemo(
+    () =>
+      now
+        ? now.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          })
+        : "--:--:--",
+    [now]
+  )
+
   return (
-    <main className="relative">
-      <Hero />
-      <Skills />
-      <Experience />
-      <Projects repos={GITHUB_REPOS} githubUsername={GITHUB_USERNAME} />
-      <Contact />
-      <Footer />
+    <main className="min-h-screen bg-background text-foreground">
+      <div className="mx-auto flex min-h-screen w-full max-w-3xl flex-col items-center px-6 py-8">
+        <div className="flex w-full flex-1 items-center justify-center">
+          <div className="relative w-full text-center">
+            <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-[110%] text-6xl font-mono tracking-widest sm:text-8xl md:text-9xl">
+              {timeLabel}
+            </div>
+            <div className="text-4xl font-medium tracking-wide sm:text-5xl">
+              {typedHello}
+              {typedHello.length < INTRO_TEXT.length && <span className="animate-pulse">|</span>}
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-center pb-4">
+          <Link
+            href="/portfolio"
+            className="rounded-full border border-border px-6 py-3 text-sm font-medium uppercase tracking-[0.2em] transition hover:bg-foreground hover:text-background"
+          >
+            Open Portfolio
+          </Link>
+        </div>
+      </div>
     </main>
   )
 }
