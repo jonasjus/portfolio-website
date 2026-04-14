@@ -179,7 +179,7 @@ export function Projects({ repos, githubUsername }: ProjectsProps) {
 
   return (
     <section id="projects" className="px-6 py-24">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-5xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -187,8 +187,8 @@ export function Projects({ repos, githubUsername }: ProjectsProps) {
           transition={{ duration: 0.8 }}
           className="flex flex-col gap-8 lg:flex-row lg:gap-16"
         >
-          <div className="lg:w-1/3">
-            <h2 className="text-xs uppercase tracking-widest text-muted-foreground lg:sticky lg:top-24">
+          <div className="lg:w-1/3 mb-8 lg:mb-0">
+            <h2 className="text-xs tracking-widest text-muted-foreground uppercase lg:sticky lg:top-24">
               Projects
             </h2>
           </div>
