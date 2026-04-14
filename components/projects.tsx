@@ -2,9 +2,24 @@
 
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { ExternalLink, Github, Star, GitFork, Loader2 } from "lucide-react"
+import { ExternalLink, Github, GitFork, Loader2, Sparkles, Star } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from "@/components/ui/carousel"
 
 interface ProjectData {
   title: string
@@ -18,22 +33,15 @@ interface ProjectData {
 }
 
 interface RepoConfig {
-  /** Optional GitHub repository URL */
   url?: string
-  /** Optional custom title (overrides GitHub repository name) */
   title?: string
-  /** Optional project status tag */
   inProgress?: boolean
-  /** Optional custom description (overrides GitHub description) */
   description?: string
-  /** Optional custom languages/technologies (overrides GitHub languages) */
   languages?: string[]
 }
 
 interface ProjectsProps {
-  /** Array of GitHub repository configs to fetch and display */
   repos: RepoConfig[]
-  /** GitHub username for the "View All" link */
   githubUsername?: string
 }
 
@@ -41,6 +49,46 @@ export function Projects({ repos, githubUsername }: ProjectsProps) {
   const [projects, setProjects] = useState<ProjectData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [api, setApi] = useState<CarouselApi | null>(null)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [selectedProjectIndex, setSelectedProjectIndex] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!api) {
+      return
+    }
+
+    const updateActiveIndex = () => {
+      setActiveIndex(api.selectedScrollSnap())
+    }
+
+    updateActiveIndex()
+    api.on("select", updateActiveIndex)
+    api.on("reInit", updateActiveIndex)
+
+    return () => {
+      api.off("select", updateActiveIndex)
+      api.off("reInit", updateActiveIndex)
+    }
+  }, [api])
+
+  useEffect(() => {
+    if (projects.length === 0) {
+      setActiveIndex(0)
+      return
+    }
+
+    if (activeIndex >= projects.length) {
+      setActiveIndex(0)
+      api?.scrollTo(0)
+    }
+  }, [activeIndex, api, projects.length])
+
+  useEffect(() => {
+    if (selectedProjectIndex !== null && selectedProjectIndex >= projects.length) {
+      setSelectedProjectIndex(null)
+    }
+  }, [projects.length, selectedProjectIndex])
 
   useEffect(() => {
     async function fetchProjects() {
@@ -82,7 +130,6 @@ export function Projects({ repos, githubUsername }: ProjectsProps) {
 
           const data = await response.json()
 
-          // Apply manual overrides for title, description and languages
           fetchedProjects = data.projects.map((project: ProjectData) => {
             const repoConfig = reposWithUrl.find((repo) =>
               project.github.includes((repo.url as string).replace("https://github.com/", ""))
@@ -117,144 +164,401 @@ export function Projects({ repos, githubUsername }: ProjectsProps) {
     fetchProjects()
   }, [repos])
 
+  const selectedProject =
+    selectedProjectIndex !== null ? projects[selectedProjectIndex] ?? null : null
+
+  const handleIndexBarClick = (index: number) => {
+    if (api) {
+      api.scrollTo(index)
+      return
+    }
+
+    // Fallback keeps UI state responsive if carousel API isn't ready yet.
+    setActiveIndex(index)
+  }
+
   return (
-    <section id="projects" className="py-24 px-6">
-      <div className="max-w-5xl mx-auto">
+    <section id="projects" className="px-6 py-24">
+      <div className="mx-auto max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8 }}
-          className="flex flex-col lg:flex-row lg:gap-16"
+          className="flex flex-col gap-8 lg:flex-row lg:gap-16"
         >
-          {/* Section Title */}
-          <div className="lg:w-1/3 mb-8 lg:mb-0">
-            <h2 className="text-xs tracking-widest text-muted-foreground uppercase lg:sticky lg:top-24">
+          <div className="lg:w-1/3">
+            <h2 className="text-xs uppercase tracking-widest text-muted-foreground lg:sticky lg:top-24">
               Projects
             </h2>
           </div>
 
-          {/* Project Cards */}
-          <div className="lg:w-2/3 space-y-8">
+          <div className="lg:w-2/3 space-y-6">
             {loading && (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 <span className="ml-3 text-muted-foreground">Loading projects...</span>
               </div>
             )}
 
             {error && (
-              <div className="text-center py-12">
+              <div className="py-12 text-center">
                 <p className="text-destructive">{error}</p>
               </div>
             )}
 
             {!loading && !error && projects.length === 0 && (
-              <div className="text-center py-12">
+              <div className="py-12 text-center">
                 <p className="text-muted-foreground">No projects to display.</p>
               </div>
             )}
 
-            {!loading &&
-              !error &&
-              projects.map((project, index) => (
-                <motion.div
-                  key={project.github || `${project.title}-${index}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
+            {!loading && !error && projects.length > 0 && (
+              <>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6 }}
+              >
+                <div
+                  className="relative rounded-[2rem]"
                 >
-                  <Card className="group bg-transparent border-border/50 hover:border-primary/30 hover:bg-card/30 transition-all duration-300 overflow-hidden">
-                    <CardContent className="p-6">
-                      <div className="flex flex-col gap-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-3">
-                            <h3 className="text-foreground font-medium text-lg group-hover:text-primary transition-colors duration-300">
-                              {project.title}
-                            </h3>
-                            {project.inProgress && (
-                              <span className="text-xs font-normal text-primary bg-primary/10 px-2 py-1 rounded">
-                                In Progress
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-3">
-                            {project.github && (
-                              <a
-                                href={project.github}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-muted-foreground hover:text-foreground transition-colors duration-300"
-                                aria-label={`${project.title} GitHub Repository`}
-                              >
-                                <Github className="w-4 h-4" />
-                              </a>
-                            )}
-                            {project.demo && (
-                              <a
-                                href={project.demo}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-muted-foreground hover:text-foreground transition-colors duration-300"
-                                aria-label={`${project.title} Live Demo`}
-                              >
-                                <ExternalLink className="w-4 h-4" />
-                              </a>
-                            )}
-                          </div>
-                        </div>
+                  <Carousel
+                    setApi={setApi}
+                    opts={{ align: "center", loop: projects.length > 1 }}
+                    className="relative w-full [perspective:1400px]"
+                  >
+                    <div
+                        className="overflow-hidden"
+                        style={{
+                            WebkitMaskImage:
+                            "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)",
+                            maskImage:
+                            "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)",
+                        }}
+                    >
+                    <CarouselContent className="-ml-3 items-stretch">
+                      {projects.map((project, slideIndex) => {
+                        const isActive = slideIndex === activeIndex
+                        const isNeighbor = Math.abs(slideIndex - activeIndex) === 1
 
-                        <p className="text-muted-foreground text-sm leading-relaxed">
-                          {project.description}
-                        </p>
-
-                        <div className="flex items-center justify-between">
-                          <div className="flex flex-wrap gap-2">
-                            {project.technologies.map((tech) => (
-                              <Badge
-                                key={tech}
-                                variant="secondary"
-                                className="bg-primary/10 text-primary border-0 text-xs font-medium"
+                        return (
+                          <CarouselItem
+                            key={project.github || `${project.title}-${slideIndex}`}
+                            className="basis-full pl-3 sm:basis-[80%] lg:basis-2/3"
+                          >
+                            <motion.div
+                              animate={{
+                                scale: isActive ? 1 : 0.95,
+                                rotateY: isActive ? 0 : slideIndex < activeIndex ? 10 : -10,
+                                rotateX: isActive ? 0 : 2,
+                                y: isActive ? 0 : 16,
+                                opacity: isActive ? 1 : isNeighbor ? 0.72 : 0.55,
+                                filter: isActive ? "blur(0px)" : isNeighbor ? "blur(1px)" : "blur(2px)",
+                              }}
+                              transition={{ duration: 0.45, ease: "easeOut" }}
+                              style={{ transformStyle: "preserve-3d" }}
+                              className="h-full"
+                            >
+                              <div
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => setSelectedProjectIndex(slideIndex)}
+                                onKeyDown={(event) => {
+                                  if (event.key === "Enter" || event.key === " ") {
+                                    event.preventDefault()
+                                    setSelectedProjectIndex(slideIndex)
+                                  }
+                                }}
+                                className="group block h-full w-full cursor-pointer text-left outline-none"
+                                aria-label={`Open details for ${project.title}`}
                               >
-                                {tech}
-                              </Badge>
-                            ))}
-                          </div>
+                                <Card
+                                  className={
+                                    "h-full overflow-hidden border-border/50 bg-card/40 transition-all duration-500" +
+                                    (isActive
+                                      ? " border-primary/35 shadow-[0_20px_60px_rgba(0,0,0,0.18)]"
+                                      : " border-border/30 shadow-none")
+                                  }
+                                >
+                                  <CardContent className="p-0">
+                                    <div className="flex h-full min-h-[28rem] flex-col">
+                                      <div className="relative min-h-44 border-b border-border/50 bg-gradient-to-br from-primary/20 via-card/70 to-transparent p-6 sm:min-h-52 sm:p-7">
+                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12),transparent_55%)]" />
+                                        <div className="relative flex h-full items-start justify-between gap-4">
+                                          <div className="max-w-xs space-y-2">
+                                            <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                                              Main Image
+                                            </p>
+                                            <p className="text-sm text-muted-foreground">
+                                              Space reserved for the featured project visual.
+                                            </p>
+                                          </div>
+                                          <Sparkles className="h-5 w-5 text-primary/80" />
+                                        </div>
+                                      </div>
 
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Star className="w-3 h-3" />
-                              {project.stars.toLocaleString()}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <GitFork className="w-3 h-3" />
-                              {project.forks.toLocaleString()}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                                      <div className="flex flex-1 flex-col justify-between gap-7 p-7 sm:p-8">
+                                        <div className="space-y-5">
+                                          <div className="flex flex-wrap items-center gap-3">
+                                            <h3 className="text-2xl font-medium tracking-tight text-foreground transition-colors duration-300 group-hover:text-primary">
+                                              {project.title}
+                                            </h3>
+                                            {project.inProgress && (
+                                              <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium uppercase tracking-[0.18em] text-primary">
+                                                In Progress
+                                              </span>
+                                            )}
+                                          </div>
+
+                                          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+                                            {project.description}
+                                          </p>
+
+                                          <div className="flex items-center gap-5 text-xs text-muted-foreground">
+                                            <span className="flex items-center gap-1.5">
+                                              <Star className="h-3 w-3" />
+                                              {project.stars.toLocaleString()}
+                                            </span>
+                                            <span className="flex items-center gap-1.5">
+                                              <GitFork className="h-3 w-3" />
+                                              {project.forks.toLocaleString()}
+                                            </span>
+                                          </div>
+                                        </div>
+
+                                        <div className="space-y-5">
+                                          <div className="flex flex-wrap items-center gap-2.5">
+                                            {project.technologies.map((tech) => (
+                                              <Badge
+                                                key={tech}
+                                                variant="secondary"
+                                                className="border-0 bg-primary/10 text-xs font-medium text-primary"
+                                              >
+                                                {tech}
+                                              </Badge>
+                                            ))}
+                                          </div>
+
+                                          <div className="flex flex-wrap items-center justify-between gap-4">
+                                            <div className="flex items-center gap-3">
+                                              {project.github && (
+                                                <a
+                                                  href={project.github}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  onClick={(event) => event.stopPropagation()}
+                                                  className="inline-flex items-center gap-2 rounded-full border border-border/60 px-4 py-2 text-sm text-foreground transition-colors duration-300 hover:border-primary/40 hover:text-primary"
+                                                  aria-label={`${project.title} GitHub Repository`}
+                                                >
+                                                  <Github className="h-4 w-4" />
+                                                  Code
+                                                </a>
+                                              )}
+                                              {project.demo && (
+                                                <a
+                                                  href={project.demo}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  onClick={(event) => event.stopPropagation()}
+                                                  className="inline-flex items-center gap-2 rounded-full border border-border/60 px-4 py-2 text-sm text-foreground transition-colors duration-300 hover:border-primary/40 hover:text-primary"
+                                                  aria-label={`${project.title} Live Demo`}
+                                                >
+                                                  <ExternalLink className="h-4 w-4" />
+                                                  Demo
+                                                </a>
+                                              )}
+                                            </div>
+
+                                            <div className="text-right text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                                              Click to expand
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            </motion.div>
+                          </CarouselItem>
+                        )
+                      })}
+                    </CarouselContent>
+                    </div>
+
+                    <CarouselPrevious className="-left-4 h-11 w-11 border-border/60 bg-background/90 shadow-md" />
+                    <CarouselNext className="-right-4 h-11 w-11 border-border/60 bg-background/90 shadow-md" />
+                  </Carousel>
+                </div>
+
                 </motion.div>
-              ))}
 
-            {/* View All Link */}
+                <div className="relative z-40 mt-6 flex flex-col items-center gap-4 pointer-events-auto">
+                  <div className="flex items-center gap-2">
+                    {projects.map((project, thumbIndex) => (
+                      <button
+                        key={project.github || `${project.title}-thumb-${thumbIndex}`}
+                        type="button"
+                        onClick={() => handleIndexBarClick(thumbIndex)}
+                        className={
+                          "h-2.5 cursor-pointer rounded-full transition-all duration-300" +
+                          (thumbIndex === activeIndex
+                            ? " w-8 bg-primary"
+                            : " w-2.5 bg-border hover:bg-muted-foreground")
+                        }
+                        aria-label={`Jump to ${project.title}`}
+                      />
+                    ))}
+                  </div>
+
+                  <div className="text-center text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                    {activeIndex + 1} / {projects.length}
+                  </div>
+                </div>
+              </>
+            )}
+
             {githubUsername && (
               <motion.a
                 href={`https://github.com/${githubUsername}?tab=repositories`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors duration-300 group"
+                className="group inline-flex items-center gap-2 text-sm text-foreground transition-colors duration-300 hover:text-primary"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: 0.4 }}
               >
                 View Full Project Archive
-                <ExternalLink className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
+                <ExternalLink className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1" />
               </motion.a>
             )}
+
+            <Dialog
+              open={selectedProjectIndex !== null}
+              onOpenChange={(open) => {
+                if (!open) {
+                  setSelectedProjectIndex(null)
+                }
+              }}
+            >
+              <DialogContent
+                className="h-[calc(100vh-1rem)] max-w-[min(1100px,calc(100vw-1rem))] overflow-hidden border-border/60 bg-background/95 p-0 sm:max-w-[min(1100px,calc(100vw-2rem))]"
+                showCloseButton
+              >
+                {selectedProject && (
+                  <div className="grid h-full grid-rows-[auto_1fr]">
+                    <div className="border-b border-border/60 bg-gradient-to-br from-primary/15 via-background to-transparent p-6 sm:p-8">
+                      <DialogHeader className="max-w-3xl text-left">
+                        <DialogTitle className="text-2xl sm:text-3xl">
+                          {selectedProject.title}
+                        </DialogTitle>
+                        <DialogDescription className="text-sm sm:text-base">
+                          Expanded project details with room for a larger hero image and extra context.
+                        </DialogDescription>
+                      </DialogHeader>
+                    </div>
+
+                    <div className="grid overflow-hidden lg:grid-cols-[0.95fr_1.05fr]">
+                      <div className="border-b border-border/60 bg-card/40 p-6 sm:p-8 lg:border-b-0 lg:border-r">
+                        <div className="rounded-3xl border border-border/60 bg-gradient-to-br from-primary/20 via-card/80 to-transparent p-6 shadow-inner sm:p-8">
+                          <div className="flex min-h-[260px] items-center justify-center rounded-2xl border border-border/50 bg-background/70 text-center">
+                            <div className="space-y-3 px-4">
+                              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                                Main Image
+                              </p>
+                              <p className="text-xl font-medium text-foreground">
+                                {selectedProject.title}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                This panel is reserved for a screenshot, mockup, or other project visual.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-6 flex flex-wrap gap-2.5">
+                          {selectedProject.technologies.map((tech) => (
+                            <Badge
+                              key={tech}
+                              variant="secondary"
+                              className="border-0 bg-primary/10 text-xs font-medium text-primary"
+                            >
+                              {tech}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col justify-between gap-6 overflow-y-auto p-6 sm:p-8">
+                        <div className="space-y-6">
+                          <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="rounded-2xl border border-border/60 bg-card/50 p-4">
+                              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                                Stars
+                              </p>
+                              <p className="mt-2 text-2xl font-medium text-foreground">
+                                {selectedProject.stars.toLocaleString()}
+                              </p>
+                            </div>
+                            <div className="rounded-2xl border border-border/60 bg-card/50 p-4">
+                              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                                Forks
+                              </p>
+                              <p className="mt-2 text-2xl font-medium text-foreground">
+                                {selectedProject.forks.toLocaleString()}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3">
+                            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                              Overview
+                            </p>
+                            <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+                              {selectedProject.description}
+                            </p>
+                          </div>
+
+                          {selectedProject.inProgress && (
+                            <div className="rounded-2xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary">
+                              This project is currently in progress.
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-3">
+                          {selectedProject.github && (
+                            <a
+                              href={selectedProject.github}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 rounded-full border border-border/60 px-4 py-2 text-sm text-foreground transition-colors duration-300 hover:border-primary/40 hover:text-primary"
+                            >
+                              <Github className="h-4 w-4" />
+                              Open Code
+                            </a>
+                          )}
+                          {selectedProject.demo && (
+                            <a
+                              href={selectedProject.demo}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 rounded-full border border-border/60 px-4 py-2 text-sm text-foreground transition-colors duration-300 hover:border-primary/40 hover:text-primary"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                              Open Demo
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
           </div>
         </motion.div>
       </div>
