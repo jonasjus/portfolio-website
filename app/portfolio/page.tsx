@@ -9,13 +9,15 @@ import { ArrowLeft } from "lucide-react"
 
 // Configure your projects here
 // url is optional; without it, the project is shown as a manual entry
-// Each repo can have optional manual overrides for title, inProgress, description and languages
+// Add image paths from /public, for example: /projects/my-project.png
+// Each repo can have optional manual overrides for title, inProgress, description, languages and image
 const GITHUB_REPOS = [
   {
     url: "https://github.com/jonasjus/webathon",
     title: "Webathon 2026 - Venue",
     inProgress: false,
     description: "",
+    image: "projects/webathon.png",
   },
   {
     url: "",
@@ -23,6 +25,7 @@ const GITHUB_REPOS = [
     inProgress: true,
     description: "Implementing a decoder-only transformer model to generate coherent text based on a given prompt. The project includes data preprocessing, model architecture design, training, and evaluation using Python and PyTorch.",
     languages: ["Python", "Pytorch", "Transformers"],
+    image: "/projects/decoder-transformer.png",
   },
   {
     url: "",
@@ -30,17 +33,20 @@ const GITHUB_REPOS = [
     inProgress: true,
     description: "Implementing an encoder-only transformer model to classify movie reviews as positive or negative. The project involves data preprocessing, model architecture design, training, and evaluation using Python and PyTorch.",
     languages: ["Python", "Pytorch", "Transformers"],
+    image: "/projects/encoder-sentiment.png",
   },
   {
     url: "",
     title: "Object detection with CNN",
     description: "Implemented a convolutional neural network for digit recognition using Python and TensorFlow.",
     languages: ["Python", "Pytorch", "CNN"],
+    image: "/projects/detection.png",
   },
   {
     url: "https://github.com/jonasjus/StarJump",
     description: "Developed a 2D platformer game in Java, I worked on game mechanics such as character movement, enemy AI and level loader. Worked in a team of 6 using Git and Agile methodologies.",
     languages: ["Java", "Maven", "Agile", "Git teamwork"],
+    image: "projects/starjump.png",
   }
 ]
 

@@ -114,25 +114,11 @@ export function Hero() {
                         transition={{ duration: 0.8, delay: 0.4 }}
                     >
                         <p className="text-muted-foreground leading-relaxed mb-6">
-                            {"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."}
-                            <span className="text-foreground font-medium">statistics</span>
-                            {", "}
-                            <span className="text-foreground font-medium">machine learning</span>
-                            {", and "}
-                            <span className="text-foreground font-medium">domain expertise</span>
-                            {"Duis aute irure dolor in reprehenderit in voluptate velit esse cillum."}
+                            {"I'm a data science student at the University of Bergen, with a real passion for machine learning and deep learning. I love figuring out how to take powerful models and actually apply them to real-world problems. That's where things get exciting for me. Whether it's training neural networks, digging into messy datasets, or building something that genuinely works, I'm all in."}
                         </p>
 
                         <p className="text-muted-foreground leading-relaxed mb-6">
-                            {"Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur"}
-                            <span className="text-foreground font-medium">time series forecasting</span>
-                            {" and "}
-                            <span className="text-foreground font-medium">natural language processing</span>
-                            {"Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo."}
-                        </p>
-
-                        <p className="text-muted-foreground leading-relaxed mb-8">
-                            {"Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt."}
+                            {"When I'm not buried in code, you'll probably find me at the gym, cooking up something new in the kitchen, or experimenting with baking. I also love reading and gaming to unwind. Basically, I'm someone who enjoys the process of getting better at things."}
                         </p>
 
                         <div className="flex flex-wrap gap-3">

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import { motion } from "framer-motion"
 import { ExternalLink, Github, GitFork, Loader2, Sparkles, Star } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -26,6 +27,7 @@ interface ProjectData {
   description: string
   github: string
   demo: string | null
+  image?: string
   stars: number
   forks: number
   technologies: string[]
@@ -38,6 +40,7 @@ interface RepoConfig {
   inProgress?: boolean
   description?: string
   languages?: string[]
+  image?: string
 }
 
 interface ProjectsProps {
@@ -52,6 +55,7 @@ export function Projects({ repos, githubUsername }: ProjectsProps) {
   const [api, setApi] = useState<CarouselApi | null>(null)
   const [activeIndex, setActiveIndex] = useState(0)
   const [selectedProjectIndex, setSelectedProjectIndex] = useState<number | null>(null)
+  const [modalImageAspectRatio, setModalImageAspectRatio] = useState<number | null>(null)
 
   useEffect(() => {
     if (!api) {
@@ -109,6 +113,7 @@ export function Projects({ repos, githubUsername }: ProjectsProps) {
             description: repo.description ?? "No description available.",
             github: "",
             demo: null,
+            image: repo.image,
             stars: 0,
             forks: 0,
             technologies: repo.languages ?? [],
@@ -141,6 +146,7 @@ export function Projects({ repos, githubUsername }: ProjectsProps) {
                 title: repoConfig.title ?? project.title,
                 description: repoConfig.description ?? project.description,
                 technologies: repoConfig.languages ?? project.technologies,
+                image: repoConfig.image,
                 inProgress: repoConfig.inProgress ?? false,
               }
             }
@@ -166,6 +172,10 @@ export function Projects({ repos, githubUsername }: ProjectsProps) {
 
   const selectedProject =
     selectedProjectIndex !== null ? projects[selectedProjectIndex] ?? null : null
+
+  useEffect(() => {
+    setModalImageAspectRatio(null)
+  }, [selectedProject?.image])
 
   const handleIndexBarClick = (index: number) => {
     if (api) {
@@ -286,17 +296,30 @@ export function Projects({ repos, githubUsername }: ProjectsProps) {
                                     <div className="flex h-full min-h-[28rem] flex-col">
                                       <div className="relative min-h-44 border-b border-border/50 bg-gradient-to-br from-primary/20 via-card/70 to-transparent p-6 sm:min-h-52 sm:p-7">
                                         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12),transparent_55%)]" />
-                                        <div className="relative flex h-full items-start justify-between gap-4">
-                                          <div className="max-w-xs space-y-2">
-                                            <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                                              Main Image
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                              Space reserved for the featured project visual.
-                                            </p>
+                                        {project.image ? (
+                                          <>
+                                            <Image
+                                              src={project.image}
+                                              alt={`${project.title} preview image`}
+                                              fill
+                                              className="object-cover"
+                                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 60vw"
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+                                          </>
+                                        ) : (
+                                          <div className="absolute inset-0 z-10 flex items-center justify-center px-6 py-4 text-center sm:px-7">
+                                            <div className="max-w-xs space-y-2 px-4">
+                                              <Sparkles className="mx-auto h-5 w-5 text-primary/80" />
+                                              <p className="text-sm font-medium text-foreground">
+                                                {project.title} preview image
+                                              </p>
+                                              <p className="text-sm text-muted-foreground">
+                                                Add an image path in the project config to display a featured visual.
+                                              </p>
+                                            </div>
                                           </div>
-                                          <Sparkles className="h-5 w-5 text-primary/80" />
-                                        </div>
+                                        )}
                                       </div>
 
                                       <div className="flex flex-1 flex-col justify-between gap-7 p-7 sm:p-8">
@@ -464,18 +487,50 @@ export function Projects({ repos, githubUsername }: ProjectsProps) {
                     <div className="grid overflow-hidden lg:grid-cols-[0.95fr_1.05fr]">
                       <div className="border-b border-border/60 bg-card/40 p-6 sm:p-8 lg:border-b-0 lg:border-r">
                         <div className="rounded-3xl border border-border/60 bg-gradient-to-br from-primary/20 via-card/80 to-transparent p-6 shadow-inner sm:p-8">
-                          <div className="flex min-h-[260px] items-center justify-center rounded-2xl border border-border/50 bg-background/70 text-center">
-                            <div className="space-y-3 px-4">
-                              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                                Main Image
-                              </p>
-                              <p className="text-xl font-medium text-foreground">
-                                {selectedProject.title}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                This panel is reserved for a screenshot, mockup, or other project visual.
-                              </p>
-                            </div>
+                          <div
+                            className="relative w-full overflow-hidden rounded-2xl border border-border/50 bg-background/70 text-center"
+                            style={{
+                              aspectRatio: modalImageAspectRatio ? `${modalImageAspectRatio}` : "16 / 10",
+                              minHeight: "260px",
+                            }}
+                          >
+                            {selectedProject.image ? (
+                              <>
+                                <Image
+                                  src={selectedProject.image}
+                                  alt={`${selectedProject.title} main preview image`}
+                                  fill
+                                  className="object-contain"
+                                  sizes="(max-width: 1024px) 100vw, 50vw"
+                                  onLoadingComplete={(img) => {
+                                    if (!img.naturalWidth || !img.naturalHeight) {
+                                      return
+                                    }
+
+                                    const ratio = img.naturalWidth / img.naturalHeight
+                                    setModalImageAspectRatio((currentRatio) => {
+                                      if (currentRatio !== null && Math.abs(currentRatio - ratio) < 0.01) {
+                                        return currentRatio
+                                      }
+
+                                      return ratio
+                                    })
+                                  }}
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
+                              </>
+                            ) : (
+                              <div className="absolute inset-0 items-center justify-center">
+                                <div className="space-y-3 px-4 text-center">
+                                  <p className="text-xl font-medium text-foreground">
+                                    {selectedProject.title} preview image
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    Add an image path in the project config to show a larger project visual here.
+                                  </p>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
 
