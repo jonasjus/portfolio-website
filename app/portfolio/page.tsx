@@ -14,9 +14,9 @@ import { ArrowLeft } from "lucide-react"
 const GITHUB_REPOS = [
   {
     url: "https://github.com/jonasjus/webathon",
-    title: "Webathon 2026 - Venue",
+    title: "Webathon 2026 - Venue (Winner)",
     inProgress: false,
-    description: "",
+    description: "In a team of 4, we developed a web application for open event management, allowing users to create, manage, and discover events. I contributed to both frontend and backend development, and we used a stack consisting of React, Node.js, tailwindcss, supabase and hosted using vercel. We won the competition for our innovative features and user-friendly design.",
     image: "projects/webathon.png",
   },
   {
