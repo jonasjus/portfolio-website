@@ -21,10 +21,9 @@ export function Footer() {
           
           <div className="flex items-center gap-6">
             <a
-              href="/privacy"
               className="text-xs text-muted-foreground hover:text-foreground transition-colors duration-300"
             >
-              Privacy Policy
+              No Privacy Policy since we don't collect any data!
             </a>
           </div>
         </motion.div>
