@@ -19,6 +19,10 @@ export default function Home() {
   }, [typedHello])
 
   useEffect(() => {
+    document.title = "Welcome | J. Justesen"
+  }, [])
+
+  useEffect(() => {
     setNow(new Date())
     const timer = window.setInterval(() => setNow(new Date()), 1000)
     return () => window.clearInterval(timer)
