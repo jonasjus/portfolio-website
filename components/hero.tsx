@@ -56,6 +56,8 @@ export function Hero() {
                                 { label: "STUDIES", href: "/studies" },
                                 { label: "EXPERIENCE", href: "#experience" },
                                 { label: "PROJECTS", href: "#projects" },
+                                { label: "CONTACT", href: "#contact" },
+                                { label: "RESUME", href: "/CV/cv-jonas-justesen.pdf" },
                             ].map((item, i) => (
                                 <motion.a
                                     key={item.label}
