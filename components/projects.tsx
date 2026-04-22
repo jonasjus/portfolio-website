@@ -190,7 +190,25 @@ export function Projects({ repos, githubUsername }: ProjectsProps) {
   return (
     // Change 1 & 3: Section is now full-width (90vw) and uses a column layout
     // so the "PROJECTS" header sits directly above the carousel.
-    <section id="projects" className="py-24">
+    <section id="projects" className="py-24 px-6">
+      {/* Header row: matches Skills' max-w-5xl container and lg:w-1/3 column */}
+      <div className="max-w-5xl mx-auto mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8 }}
+          className="flex flex-col lg:flex-row lg:gap-16"
+        >
+          <div className="lg:w-1/3">
+            <h2 className="text-xs tracking-widest text-muted-foreground uppercase lg:sticky lg:top-24">
+              Projects
+            </h2>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Carousel: 90vw full-width below the header */}
       <div className="mx-auto w-[90vw]">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -199,13 +217,6 @@ export function Projects({ repos, githubUsername }: ProjectsProps) {
           transition={{ duration: 0.8 }}
           className="flex flex-col gap-8"
         >
-          {/* Change 3: Header is now its own row above the carousel */}
-          <div>
-            <h2 className="text-xs tracking-widest text-muted-foreground uppercase">
-              Projects
-            </h2>
-          </div>
-
           {/* Carousel area — full width of the 90vw container */}
           <div className="w-full space-y-6">
             {loading && (
