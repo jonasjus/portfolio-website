@@ -31,7 +31,7 @@ const GITHUB_REPOS = [
     url: "https://github.com/jonasjus/portfolio-website",
     inProgress: true,
     image: "/projects/portfolio.png",
-    description: "Built a personal portfolio website using Next.js and Tailwind CSS to showcase my projects, skills, and experience. The site features a responsive design, dark mode support, and smooth animations to enhance user experience.",
+    description: "Building a personal portfolio website using Next.js and Tailwind CSS to showcase my projects, skills, and experience. The site features a responsive design, dark mode support, and smooth animations to enhance user experience.",
     languages: ["TypeScript", "Next.js", "Tailwind CSS"],
   },
   {
