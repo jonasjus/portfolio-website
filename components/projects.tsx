@@ -188,22 +188,26 @@ export function Projects({ repos, githubUsername }: ProjectsProps) {
   }
 
   return (
-    <section id="projects" className="px-6 py-24">
-      <div className="mx-auto max-w-5xl">
+    // Change 1 & 3: Section is now full-width (90vw) and uses a column layout
+    // so the "PROJECTS" header sits directly above the carousel.
+    <section id="projects" className="py-24">
+      <div className="mx-auto w-[90vw]">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.8 }}
-          className="flex flex-col gap-8 lg:flex-row lg:gap-16"
+          className="flex flex-col gap-8"
         >
-          <div className="lg:w-1/3 mb-8 lg:mb-0">
-            <h2 className="text-xs tracking-widest text-muted-foreground uppercase lg:sticky lg:top-24">
+          {/* Change 3: Header is now its own row above the carousel */}
+          <div>
+            <h2 className="text-xs tracking-widest text-muted-foreground uppercase">
               Projects
             </h2>
           </div>
 
-          <div className="lg:w-2/3 space-y-6">
+          {/* Carousel area — full width of the 90vw container */}
+          <div className="w-full space-y-6">
             {loading && (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -225,197 +229,196 @@ export function Projects({ repos, githubUsername }: ProjectsProps) {
 
             {!loading && !error && projects.length > 0 && (
               <>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.6 }}
-              >
-                <div
-                  className="relative rounded-[2rem]"
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.6 }}
                 >
-                  <Carousel
-                    setApi={setApi}
-                    opts={{ align: "center", loop: projects.length > 1 }}
-                    className="relative w-full [perspective:1400px]"
-                  >
-                    <div
+                  <div className="relative rounded-[2rem]">
+                    <Carousel
+                      setApi={setApi}
+                      opts={{ align: "center", loop: projects.length > 1 }}
+                      className="relative w-full [perspective:1400px]"
+                    >
+                      <div
                         className="overflow-hidden"
                         style={{
-                            WebkitMaskImage:
+                          WebkitMaskImage:
                             "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)",
-                            maskImage:
+                          maskImage:
                             "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)",
                         }}
-                    >
-                    <CarouselContent className="-ml-3 items-stretch">
-                      {projects.map((project, slideIndex) => {
-                        const isActive = slideIndex === activeIndex
-                        const isNeighbor = Math.abs(slideIndex - activeIndex) === 1
+                      >
+                        <CarouselContent className="-ml-3 items-stretch">
+                          {projects.map((project, slideIndex) => {
+                            const isActive = slideIndex === activeIndex
+                            const isNeighbor = Math.abs(slideIndex - activeIndex) === 1
 
-                        return (
-                          <CarouselItem
-                            key={project.github || `${project.title}-${slideIndex}`}
-                            className="basis-full pl-3 sm:basis-[80%] lg:basis-2/3"
-                          >
-                            <motion.div
-                              animate={{
-                                scale: isActive ? 1 : 0.95,
-                                rotateY: isActive ? 0 : slideIndex < activeIndex ? 10 : -10,
-                                rotateX: isActive ? 0 : 2,
-                                y: isActive ? 0 : 16,
-                                opacity: isActive ? 1 : isNeighbor ? 0.72 : 0.55,
-                                filter: isActive ? "blur(0px)" : isNeighbor ? "blur(1px)" : "blur(2px)",
-                              }}
-                              transition={{ duration: 0.45, ease: "easeOut" }}
-                              style={{ transformStyle: "preserve-3d" }}
-                              className="h-full"
-                            >
-                              <div
-                                role="button"
-                                tabIndex={0}
-                                onClick={() => setSelectedProjectIndex(slideIndex)}
-                                onKeyDown={(event) => {
-                                  if (event.key === "Enter" || event.key === " ") {
-                                    event.preventDefault()
-                                    setSelectedProjectIndex(slideIndex)
-                                  }
-                                }}
-                                className="group block h-full w-full cursor-pointer text-left outline-none"
-                                aria-label={`Open details for ${project.title}`}
+                            return (
+                              <CarouselItem
+                                key={project.github || `${project.title}-${slideIndex}`}
+                                // Change 1: Each card takes ~40% width so side cards are visible at full size
+                                className="basis-full pl-3 sm:basis-[80%] lg:basis-[40%]"
                               >
-                                <Card
-                                  className={
-                                    "h-full overflow-hidden border-border/50 bg-card/40 transition-all duration-500" +
-                                    (isActive
-                                      ? " border-primary/35 shadow-[0_20px_60px_rgba(0,0,0,0.18)]"
-                                      : " border-border/30 shadow-none")
-                                  }
+                                <motion.div
+                                  animate={{
+                                    scale: isActive ? 1 : 0.95,
+                                    rotateY: isActive ? 0 : slideIndex < activeIndex ? 10 : -10,
+                                    rotateX: isActive ? 0 : 2,
+                                    y: isActive ? 0 : 16,
+                                    // Change 2: Neighbors are no longer blurred — only opacity/scale differ
+                                    opacity: isActive ? 1 : isNeighbor ? 0.72 : 0.55,
+                                    filter: "blur(0px)",
+                                  }}
+                                  transition={{ duration: 0.45, ease: "easeOut" }}
+                                  style={{ transformStyle: "preserve-3d" }}
+                                  className="h-full"
                                 >
-                                  <CardContent className="p-0">
-                                    <div className="flex h-full min-h-[28rem] flex-col">
-                                      <div className="relative min-h-44 border-b border-border/50 bg-gradient-to-br from-primary/20 via-card/70 to-transparent p-6 sm:min-h-52 sm:p-7">
-                                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12),transparent_55%)]" />
-                                        {project.image ? (
-                                          <>
-                                            <Image
-                                              src={project.image}
-                                              alt={`${project.title} preview image`}
-                                              fill
-                                              className="object-cover"
-                                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 60vw"
-                                            />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
-                                          </>
-                                        ) : (
-                                          <div className="absolute inset-0 z-10 flex items-center justify-center px-6 py-4 text-center sm:px-7">
-                                            <div className="max-w-xs space-y-2 px-4">
-                                              <Sparkles className="mx-auto h-5 w-5 text-primary/80" />
-                                              <p className="text-sm font-medium text-foreground">
-                                                {project.title} preview image
-                                              </p>
-                                              <p className="text-sm text-muted-foreground">
-                                                Add an image path in the project config to display a featured visual.
-                                              </p>
-                                            </div>
-                                          </div>
-                                        )}
-                                      </div>
-
-                                      <div className="flex flex-1 flex-col justify-between gap-7 p-7 sm:p-8">
-                                        <div className="space-y-5">
-                                          <div className="flex flex-wrap items-center gap-3">
-                                            <h3 className="text-2xl font-medium tracking-tight text-foreground transition-colors duration-300 group-hover:text-primary">
-                                              {project.title}
-                                            </h3>
-                                            {project.inProgress && (
-                                              <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium uppercase tracking-[0.18em] text-primary">
-                                                In Progress
-                                              </span>
+                                  <div
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() => setSelectedProjectIndex(slideIndex)}
+                                    onKeyDown={(event) => {
+                                      if (event.key === "Enter" || event.key === " ") {
+                                        event.preventDefault()
+                                        setSelectedProjectIndex(slideIndex)
+                                      }
+                                    }}
+                                    className="group block h-full w-full cursor-pointer text-left outline-none"
+                                    aria-label={`Open details for ${project.title}`}
+                                  >
+                                    <Card
+                                      className={
+                                        "h-full overflow-hidden border-border/50 bg-card/40 transition-all duration-500" +
+                                        (isActive
+                                          ? " border-primary/35 shadow-[0_20px_60px_rgba(0,0,0,0.18)]"
+                                          : " border-border/30 shadow-none")
+                                      }
+                                    >
+                                      <CardContent className="p-0">
+                                        <div className="flex h-full min-h-[28rem] flex-col">
+                                          <div className="relative min-h-44 border-b border-border/50 bg-gradient-to-br from-primary/20 via-card/70 to-transparent p-6 sm:min-h-52 sm:p-7">
+                                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12),transparent_55%)]" />
+                                            {project.image ? (
+                                              <>
+                                                <Image
+                                                  src={project.image}
+                                                  alt={`${project.title} preview image`}
+                                                  fill
+                                                  className="object-cover"
+                                                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 80vw, 40vw"
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+                                              </>
+                                            ) : (
+                                              <div className="absolute inset-0 z-10 flex items-center justify-center px-6 py-4 text-center sm:px-7">
+                                                <div className="max-w-xs space-y-2 px-4">
+                                                  <Sparkles className="mx-auto h-5 w-5 text-primary/80" />
+                                                  <p className="text-sm font-medium text-foreground">
+                                                    {project.title} preview image
+                                                  </p>
+                                                  <p className="text-sm text-muted-foreground">
+                                                    Add an image path in the project config to display a featured visual.
+                                                  </p>
+                                                </div>
+                                              </div>
                                             )}
                                           </div>
 
-                                          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-                                            {project.description}
-                                          </p>
+                                          <div className="flex flex-1 flex-col justify-between gap-7 p-7 sm:p-8">
+                                            <div className="space-y-5">
+                                              <div className="flex flex-wrap items-center gap-3">
+                                                <h3 className="text-2xl font-medium tracking-tight text-foreground transition-colors duration-300 group-hover:text-primary">
+                                                  {project.title}
+                                                </h3>
+                                                {project.inProgress && (
+                                                  <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium uppercase tracking-[0.18em] text-primary">
+                                                    In Progress
+                                                  </span>
+                                                )}
+                                              </div>
 
-                                          <div className="flex items-center gap-5 text-xs text-muted-foreground">
-                                            <span className="flex items-center gap-1.5">
-                                              <Star className="h-3 w-3" />
-                                              {project.stars.toLocaleString()}
-                                            </span>
-                                            <span className="flex items-center gap-1.5">
-                                              <GitFork className="h-3 w-3" />
-                                              {project.forks.toLocaleString()}
-                                            </span>
-                                          </div>
-                                        </div>
+                                              <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+                                                {project.description}
+                                              </p>
 
-                                        <div className="space-y-5">
-                                          <div className="flex flex-wrap items-center gap-2.5">
-                                            {project.technologies.map((tech) => (
-                                              <Badge
-                                                key={tech}
-                                                variant="secondary"
-                                                className="border-0 bg-primary/10 text-xs font-medium text-primary"
-                                              >
-                                                {tech}
-                                              </Badge>
-                                            ))}
-                                          </div>
-
-                                          <div className="flex flex-wrap items-center justify-between gap-4">
-                                            <div className="flex items-center gap-3">
-                                              {project.github && (
-                                                <a
-                                                  href={project.github}
-                                                  target="_blank"
-                                                  rel="noopener noreferrer"
-                                                  onClick={(event) => event.stopPropagation()}
-                                                  className="inline-flex items-center gap-2 rounded-full border border-border/60 px-4 py-2 text-sm text-foreground transition-colors duration-300 hover:border-primary/40 hover:text-primary"
-                                                  aria-label={`${project.title} GitHub Repository`}
-                                                >
-                                                  <Github className="h-4 w-4" />
-                                                  Code
-                                                </a>
-                                              )}
-                                              {project.demo && (
-                                                <a
-                                                  href={project.demo}
-                                                  target="_blank"
-                                                  rel="noopener noreferrer"
-                                                  onClick={(event) => event.stopPropagation()}
-                                                  className="inline-flex items-center gap-2 rounded-full border border-border/60 px-4 py-2 text-sm text-foreground transition-colors duration-300 hover:border-primary/40 hover:text-primary"
-                                                  aria-label={`${project.title} Live Demo`}
-                                                >
-                                                  <ExternalLink className="h-4 w-4" />
-                                                  Demo
-                                                </a>
-                                              )}
+                                              <div className="flex items-center gap-5 text-xs text-muted-foreground">
+                                                <span className="flex items-center gap-1.5">
+                                                  <Star className="h-3 w-3" />
+                                                  {project.stars.toLocaleString()}
+                                                </span>
+                                                <span className="flex items-center gap-1.5">
+                                                  <GitFork className="h-3 w-3" />
+                                                  {project.forks.toLocaleString()}
+                                                </span>
+                                              </div>
                                             </div>
 
-                                            <div className="text-right text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                                              Click to expand
+                                            <div className="space-y-5">
+                                              <div className="flex flex-wrap items-center gap-2.5">
+                                                {project.technologies.map((tech) => (
+                                                  <Badge
+                                                    key={tech}
+                                                    variant="secondary"
+                                                    className="border-0 bg-primary/10 text-xs font-medium text-primary"
+                                                  >
+                                                    {tech}
+                                                  </Badge>
+                                                ))}
+                                              </div>
+
+                                              <div className="flex flex-wrap items-center justify-between gap-4">
+                                                <div className="flex items-center gap-3">
+                                                  {project.github && (
+                                                    <a
+                                                      href={project.github}
+                                                      target="_blank"
+                                                      rel="noopener noreferrer"
+                                                      onClick={(event) => event.stopPropagation()}
+                                                      className="inline-flex items-center gap-2 rounded-full border border-border/60 px-4 py-2 text-sm text-foreground transition-colors duration-300 hover:border-primary/40 hover:text-primary"
+                                                      aria-label={`${project.title} GitHub Repository`}
+                                                    >
+                                                      <Github className="h-4 w-4" />
+                                                      Code
+                                                    </a>
+                                                  )}
+                                                  {project.demo && (
+                                                    <a
+                                                      href={project.demo}
+                                                      target="_blank"
+                                                      rel="noopener noreferrer"
+                                                      onClick={(event) => event.stopPropagation()}
+                                                      className="inline-flex items-center gap-2 rounded-full border border-border/60 px-4 py-2 text-sm text-foreground transition-colors duration-300 hover:border-primary/40 hover:text-primary"
+                                                      aria-label={`${project.title} Live Demo`}
+                                                    >
+                                                      <ExternalLink className="h-4 w-4" />
+                                                      Demo
+                                                    </a>
+                                                  )}
+                                                </div>
+
+                                                <div className="text-right text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                                                  Click to expand
+                                                </div>
+                                              </div>
                                             </div>
                                           </div>
                                         </div>
-                                      </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              </div>
-                            </motion.div>
-                          </CarouselItem>
-                        )
-                      })}
-                    </CarouselContent>
-                    </div>
+                                      </CardContent>
+                                    </Card>
+                                  </div>
+                                </motion.div>
+                              </CarouselItem>
+                            )
+                          })}
+                        </CarouselContent>
+                      </div>
 
-                    <CarouselPrevious className="-left-4 h-11 w-11 border-border/60 bg-background/90 shadow-md" />
-                    <CarouselNext className="-right-4 h-11 w-11 border-border/60 bg-background/90 shadow-md" />
-                  </Carousel>
-                </div>
-
+                      <CarouselPrevious className="-left-4 h-11 w-11 border-border/60 bg-background/90 shadow-md" />
+                      <CarouselNext className="-right-4 h-11 w-11 border-border/60 bg-background/90 shadow-md" />
+                    </Carousel>
+                  </div>
                 </motion.div>
 
                 <div className="relative z-40 mt-6 flex flex-col items-center gap-4 pointer-events-auto">
