@@ -55,11 +55,21 @@ const SEMESTERS = [
     {
         number: 6,
         period: "Spring 2026",
-        isCurrent: true,
+        isCurrent: false,
         courses: [
             { name: "Foundations of data-oriented visual computing", description: "Real world applications of data-oriented visual computing", link: "https://www4.uib.no/studier/emner/inf250" },
             { name: "Deep Learning", description: "Neural network architectures and training methods", link: "https://www4.uib.no/studier/emner/inf265" },
             { name: "Examen Philosophicum", description: "Studying the ethics of science practice and communication", link: "https://www4.uib.no/studier/emner/exphil-mnsem" },
+        ],
+    },
+    {
+        number: 7,
+        period: "Fall 2026",
+        isCurrent: true,
+        courses: [
+            { name: "Machine Learning", description: "Foundations for Machine Learning", link: "https://www4.uib.no/studier/emner/inf264" },
+            { name: "Algorithm Design", description: "Design and analysis of algorithms", link: "https://www4.uib.no/studier/emner/inf234" },
+            { name: "Ethics of Artificial Intelligence", description: "Studying the ethics of artificial intelligence", link: "https://www4.uib.no/studier/emner/aiki210" },
         ],
     },
 ]

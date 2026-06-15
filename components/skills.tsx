@@ -6,37 +6,37 @@ const skillCategories = [
   {
     category: "Languages",
     skills: [
-      { name: "Python", experience: 4 },
-      { name: "SQL", experience: 4 },
-      { name: "Java", experience: 4 },
+      { name: "Python", symbol: "🐍", experience: 4 },
+      { name: "SQL", symbol: "📊", experience: 4 },
+      { name: "Java", symbol: "☕", experience: 4 },
     ],
   },
   {
     category: "Machine Learning",
     skills: [
-      { name: "PyTorch", experience: 3 },
-      { name: "Scikit-learn", experience: 3 },
+      { name: "PyTorch", symbol: "🔥", experience: 3 },
+      { name: "Scikit-learn", symbol: "🤖", experience: 3 },
 
     ],
   },
   {
     category: "Data Tools",
     skills: [
-      { name: "Pandas", experience: 4 },
-      { name: "NumPy", experience: 4 },
+      { name: "Pandas", symbol: "🐼", experience: 4 },
+      { name: "NumPy", symbol: "🔢", experience: 4 },
     ],
   },
   {
     category: "Other",
     skills: [
-      { name: "Git", experience: 4 },
-      { name: "Agile Methodologies", experience: 3 },
-      { name: "Agentic Coding", experience: 3 },
+      { name: "Git", symbol: "🌳", experience: 4 },
+      { name: "Agile Methodologies", symbol: "⚡", experience: 3 },
+      { name: "Agentic Coding", symbol: "🤖", experience: 3 },
     ],
   },
 ]
 
-const MAX_EXPERIENCE_DOTS = 4
+const MAX_EXPERIENCE_DOTS = 0
 
 export function Skills() {
   return (
@@ -74,8 +74,11 @@ export function Skills() {
                   <div className="space-y-3">
                     {category.skills.map((skill, skillIndex) => (
                       <div key={skill.name} className="space-y-1.5">
-                        <div className="flex justify-between text-xs">
-                          <span className="text-muted-foreground">{skill.name}</span>
+                        <div className="flex justify-between items-center text-xs">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{skill.symbol}</span>
+                            <span className="text-muted-foreground">{skill.name}</span>
+                          </div>
                           <div className="flex items-center gap-1" aria-label={`${skill.experience} out of ${MAX_EXPERIENCE_DOTS} experience dots`}>
                             {Array.from({ length: MAX_EXPERIENCE_DOTS }).map((_, dotIndex) => {
                               const isFilled = dotIndex < skill.experience

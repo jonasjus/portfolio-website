@@ -162,8 +162,8 @@ export function StudiesTimeline({
             transition={{ duration: 0.5, delay: semesters.length * 0.1 }}
             className="relative"
           >
-            <div className="absolute left-0 md:left-1/2 top-0 w-4 h-4 rounded-full border-2 border-dashed border-muted-foreground -translate-x-1/2" />
-            <p className="ml-8 md:ml-0 md:text-center text-sm text-muted-foreground pt-1">
+            <div className="absolute left-0 md:left-1/2 top-0 w-4 h-4 rounded-full border-4 border-dashed border-muted-foreground -translate-x-1/2" />
+            <p className="ml-8 md:ml-0 md:text-center text-sm text-muted-foreground pt-10">
               More to come...
             </p>
           </motion.div>
